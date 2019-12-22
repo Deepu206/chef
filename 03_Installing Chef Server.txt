@@ -1,22 +1,24 @@
 Creating the Chef Server
-For this course, weíre going to use the most recent stable release of chef server (which is 12.17.331). 
+For this course, we‚Äôre going to use the most recent stable release of chef server (which is 12.17.331). 
 Our first step is going to be creating a CentOS 7 cloud server to be used as our Chef server.
 After that server is running, we need to get the download link for a Redhat 64bit system from the downloads page (https://downloads.chef.io/chef-server). 
-Letís use curl to copy this onto our server so that we can install it. 
-Since weíll need to run virtually all of these commands using sudo weíll switch to root at the start:
+Let‚Äôs use curl to copy this onto our server so that we can install it. 
+Since we‚Äôll need to run virtually all of these commands using sudo we‚Äôll switch to root at the start:
 
 $ sudo su -
 [root] $ cd /tmp
 [root] $ curl -O https://packages.chef.io/files/stable/chef-server/12.17.33/el/7/chef-server-core-12.17.33-1.el7.x86_64.rpm
 [root] $ rpm -Uvh chef-server-core-12.17.33-1.el7.x86_64.rpm
 
-This might take a few moments, but this will install Cher Server and provide us with a few more utilities. Chef Server is a collection of many different services, and weíll need to configure those before we can do anything with the server. Chef Server utilizes Chef itself to configure its own services and weíll see this in the output from our next command:
+This might take a few moments, but this will install Cher Server and provide us with a few more utilities. Chef Server is a
+collection of many different services, and we‚Äôll need to configure those before we can do anything with the server. Chef Server 
+utilizes Chef itself to configure its own services and we‚Äôll see this in the output from our next command:
 
 Note: This command can take quite awhile complete.
 
 [root] $ chef-server-ctl reconfigure
 
-Letís take a better look at what it takes to operate the chef server by looking at the services that it manages:
+Let‚Äôs take a better look at what it takes to operate the chef server by looking at the services that it manages:
 
 [root] $ chef-server-ctl service-list
 okshelf*
@@ -32,10 +34,10 @@ rabbitmq*
 redis_lb*
 
 
-The * on each line indicates that the service is enabled and running. As we can see, it takes quite a few dependent services to make the Chef server work. As we go through this course weíll learn more and more about what the Chef server itself does.
+The * on each line indicates that the service is enabled and running. As we can see, it takes quite a few dependent services to make the Chef server work. As we go through this course we‚Äôll learn more and more about what the Chef server itself does.
 
 Creating Our User and Organization
-Before we can move on, we need to set up a user and an organization to belong to. Organizations are the umbrella that we will register nodes under and associate cookbooks with as we move forward. Letís start by creating our user:
+Before we can move on, we need to set up a user and an organization to belong to. Organizations are the umbrella that we will register nodes under and associate cookbooks with as we move forward. Let‚Äôs start by creating our user:
 
 [root] $ # chef-server-ctl user-create USER_NAME FIRST_NAME LAST_NAME EMAIL 'PASSWORD' --filename FILE_NAME
 [root] $ chef-server-ctl user-create keith Keith Thompson keith@linuxacademy.com 'p@ssw0rd' --filename /home/user/keith.pem
@@ -51,11 +53,11 @@ This command is very similar to our user creation command, but it is important t
 2. Can only contain lowercase letters, digits, hyphens, and underscores.
 3. Must be between 1 and 255 characters long.
 
-The --association_user flag will take an existing userís username and associate it with the admin security group on the Chef server. Lastly, the --filename flag stores off the organizationís validator pem. We wonít be using this file during this course.
+The --association_user flag will take an existing user‚Äôs username and associate it with the admin security group on the Chef server. Lastly, the --filename flag stores off the organization‚Äôs validator pem. We won‚Äôt be using this file during this course.
 
 
 Adding chef-manage Web UI
-The last thing weíre going to do with our Chef server right now is install a web UI add-on called ìChef Manageî. This add-on gives us a web-based way to see all of the Chef related information that weíll need around our organization including node information, cookbook versions, and more. Once again, we will install this add-on using the chef-server-ctl utility:
+The last thing we‚Äôre going to do with our Chef server right now is install a web UI add-on called ‚ÄúChef Manage‚Äù. This add-on gives us a web-based way to see all of the Chef related information that we‚Äôll need around our organization including node information, cookbook versions, and more. Once again, we will install this add-on using the chef-server-ctl utility:
 
 [root] $ chef-server-ctl install chef-manage
 Note: this installation can take quite awhile.
@@ -74,4 +76,4 @@ yes
 
 Note: You'll will need to close the license agreement by hitting q before you can type `yes`.
 
-After we accept the license agreement then another chef-client run will occur configuring the services managed by chef-manage. Once the reconfiguration has finished, we can access the UI by going to https://SERVER_PUBLIC_IP. We need to tell the browser that we understand that the website is using a self-signed certificate, and after we do that we can see that there is a sign in form. Weíll ensure that the username/password created earlier works, and then weíre ready to move forward.
+After we accept the license agreement then another chef-client run will occur configuring the services managed by chef-manage. Once the reconfiguration has finished, we can access the UI by going to https://SERVER_PUBLIC_IP. We need to tell the browser that we understand that the website is using a self-signed certificate, and after we do that we can see that there is a sign in form. We‚Äôll ensure that the username/password created earlier works, and then we‚Äôre ready to move forward.
