@@ -1,0 +1,68 @@
+Why infrastructure as a code:-
+1. Lowers cost 
+
+	And it does this by reducing the amount of time required to provisioning and manage infrastructure.
+	And what we mean by this is that one person or, you know, maybe a small team can manage a very, very
+	large infrastructure with a lot of confidence. When you use infrastructure as a code, when you really 
+	codeify the configuration that you're using and you have some automated provisioning set up that you 
+	don't have to manually going copy things around.
+	
+2.Improvement of Speed
+
+	And this happens because when you codeify your infrastructure and your provisioning you can do things much
+	faster than you can as a human. One of the older ways of going through in provisioning machines and doing your 
+	configuration is maybe you would write a bunch of bash scripts that you would kind of cobble together, but you 
+	would have to manually do them one after another. Or you would copy and paste lines from a file that you knew 
+	this is the exact thing that you needed to run, but doing it that way is still slower than if you had an automated 
+	process where you were able to write your configuration and then have the machine go and run it on a group of nodes 
+	simultaneously. So that's much, much faster than you manually doing it.
+	
+3. Improves Stability and Security
+
+	And we get stability because we can see the changes that are being made. And we know that we're specifying maybe specific 
+	versions of packages that were installing and we can have these be peer reviewed and then additionally, we get the security 
+	benefits of that, too. So you have if somebody can watch the changes being made to your configuration through your configuration
+	management repositories. So you write your code. Somebody reviews that code. They can see maybe if you have malicious people 
+	internally who are trying to add things or back doors and tear infrastructure, those can be found in pure review. And even more 
+	than that, you can automate some security checks on your infrastructure, using some of the same tools that we're gonna be talking 
+	about. 
+
+So with these goals and benefits in mind, we want to lower costs, improve speed and improve stability and security. 
+
+Where to chef fit into the entire picture?
+
+Chef provides us with a few things. It's gonna be a domain specific language or D S. L. That you'll see for specifying our infrastructure
+as a code and then also having the automation baked into it. You could achieve something similar using Bash scripts like we just talked 
+about. But Chef gives us a declarative approach and what we mean by a declared of approaches that we are allowed to specify the final 
+product that we want the configuration that we want at the very end and then not necessarily need to worry about all the individual steps
+it takes to get there. And this gives us some flexibility to deploy across multiple different server types or operating systems. We can 
+write the same piece of code to install a package on centos as we can on debian without us needing to worry about.
+
+Oh, you're going to need to use apt get here or you're gonna need to use yum. This allows us to just declare what we want to have done
+and then have it actually take the proper steps based on some information about the specific know that we're installing something on or
+configuring something on.And then Chef is a multi part process. So it's a system divided into multiple parts. We have the chef development
+Kit,which we're going to use on our own work station, the chef server, which holds on to all of the truth of our infrastructure. So it 
+knows about all the nodes and knows the information about the nodes. We can store our configuration there, and then that's also how we're
+going to go about getting things deployed And then the chef client is the important part that resides on every one of the nodes that we 
+want to actually configure. And it knows to talk to the chef server to pull down its own configuration and get that configuration applied. 
+It's a little bit more complicated than just these three parts. There are a lot of smaller parts that are involved in that. And if we look 
+at the big picture of Chef, this is kind of what we get.
+
+The chef Dev Kit gives us a lot of small tools that can do many things for us,such as:
+
+Food Critic or helping us with our best practices of writing cookbooks with Food Critic.
+Kitchen for having automated tests for our actual cookbooks that we can run on maybe virtual machines that we have running locally or Docker Containers.
+ChefSpec is a way to specify those things.
+InSpec is for security, auditing. 
+
+And then we get into the actual parts of chef itself, which is gonna be the, recipes and cookbook so that we can write our configurations 
+desired state and bundle those things together, package them, and then we'll move those over to the chef server where we can store the 
+cookbooks. We can specify what to do on nodes. 
+
+This is where we register all of the nodes in our infrastructure and really kind of tied together the big picture of what our exact 
+infrastructure is gonna be in what the configuration on everything is going to be. We're gonna do that within the chef server. 
+And then finally, all of the individual pieces of infrastructure that were configuring those are gonna be our clients. Each one of them
+runs its own chef client process that allows it to pull down its configuration and apply it to make sure that it's in the state that 
+we expected to be in.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Done<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

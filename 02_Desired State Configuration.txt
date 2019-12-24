@@ -1,0 +1,56 @@
+Here, we're gonna talk about what desired state configuration is, We briefly talked about it when we're looking at infrastructure as a code 
+and kind of the big picture of what Chef has broken into. :-
+1. Specify the end result and not necessarily the how to get there But it's really the specifications of what and not how,
+   and this is really important so that we don't potentially right the wrong sort of configuration when we're working with
+   Chef so desired. State configuration lets us Specify the end result and not necessarily the how to get there.
+ 
+2. Test and Repair Approach 
+	and what this means is we define our desired state and then on each chef client It's going to test its current state and then figure out
+	the difference essentially between the desired state and its current state and it'll Only carry out the steps that need to occur to get 
+	it from A to B. So if there are some things that aren't configured properly, it's going to run only the steps it needs to, to get it 
+	configured properly, and if it's in the situation where it is already in the desired state than absolutely no configuration changes 
+	yhey're going to run. And that's pretty nice, because that allows us to not have to worry necessarily too much about running chef 
+	client on some pieces of infrastructure because at the very worst, it's going to get us to the desired state configuration that we have
+	already set up. So we really have to be worried about, you know, making the wrong state configuration.
+	So that's something that we're gonna kind of do on the development side of things and not necessarily need to worry about it as much. 
+	when we go into deploying these things, One thing to know is there's kind of two ways that you can go about applying configuration
+	that's going to be using an, 
+
+Imperative style 
+
+	yum install -y nginx
+	systemctl start nginx
+	systemctl enable nginx
+	
+	And the imperative style, which is something you do using Bash is sort of the opposite of defining what and not how this is us 
+	defining exactly how to do it. So we're gonna use yum install nginx. We want to start the nginx service, and then we want to enable 
+	the Internet service. This is us being very specific. This is only going to run on some variant of red hat that has yum installed. 
+	And it also has to have systemd installed
+
+Declarative style. 
+
+    package "nginx"
+
+	service "nginx" do
+		action [:enable, :start]
+	end
+
+	if we went with the declarative approach where we're saying this is what we want done and not necessarily how to do it. 
+	This is what we had come up with. And this is actually in the chef DSL, which is going to be Ruby code. 	
+	But package is a way for us to specify that we want to install a package on the system we're gonna install nginx notice that we're not
+	being specific and saying yum, 
+	
+	we're saying just package in general and this particular piece of configuration could work both on a 
+	debian based system or a red hat based system, and it would know which package manager to use and then moving down we say service nginx.
+	We want to configure a service, and we want to configure to do a few different things. We wanted to be enabled and to start, and this 
+	
+	is going to assume that whatever your service manager is can handle starting it and enabling it and knows how to do that. But you don't
+	need to know exactly what that is. So if something's running systemd, you're good. If you're not running Systemd and you're running 
+	something else, then presumably it would work with us. You might run into situations where you're running some really obscure operating
+	
+	system and packages so won't quite work that way. But you can think of this is we're specifying exactly the big picture that we want,
+	not necessarily. Steps to get there occasionally will run into problems and will have to be a little bit more manual on what we're
+	doing. But this is a declarative approach to defining our configuration.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Done<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
