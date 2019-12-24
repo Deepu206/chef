@@ -1,24 +1,25 @@
 Creating the Chef Server
-For this course, weâ€™re going to use the most recent stable release of chef server (which is 12.17.331). 
+For this course, we’re going to use the most recent stable release of chef server (which is 12.17.331). 
 Our first step is going to be creating a CentOS 7 cloud server to be used as our Chef server.
-After that server is running, we need to get the download link for a Redhat 64bit system from the downloads page (https://downloads.chef.io/chef-server). 
-Letâ€™s use curl to copy this onto our server so that we can install it. 
-Since weâ€™ll need to run virtually all of these commands using sudo weâ€™ll switch to root at the start:
+After that server is running, we need to get the download link for a Redhat 64bit system from the downloads 
+page (https://downloads.chef.io/chef-server). 
+Let’s use curl to copy this onto our server so that we can install it. 
+Since we’ll need to run virtually all of these commands using sudo we’ll switch to root at the start:
 
 $ sudo su -
 [root] $ cd /tmp
 [root] $ curl -O https://packages.chef.io/files/stable/chef-server/12.17.33/el/7/chef-server-core-12.17.33-1.el7.x86_64.rpm
 [root] $ rpm -Uvh chef-server-core-12.17.33-1.el7.x86_64.rpm
 
-This might take a few moments, but this will install Cher Server and provide us with a few more utilities. Chef Server is a
-collection of many different services, and weâ€™ll need to configure those before we can do anything with the server. Chef Server 
-utilizes Chef itself to configure its own services and weâ€™ll see this in the output from our next command:
+This might take a few moments, but this will install Cher Server and provide us with a few more utilities. Chef Server is a collection 
+of many different services, and we’ll need to configure those before we can do anything with the server. Chef Server utilizes Chef itself
+to configure its own services and we’ll see this in the output from our next command:
 
 Note: This command can take quite awhile complete.
 
 [root] $ chef-server-ctl reconfigure
 
-Letâ€™s take a better look at what it takes to operate the chef server by looking at the services that it manages:
+Let’s take a better look at what it takes to operate the chef server by looking at the services that it manages:
 
 [root] $ chef-server-ctl service-list
 okshelf*
@@ -34,30 +35,39 @@ rabbitmq*
 redis_lb*
 
 
-The * on each line indicates that the service is enabled and running. As we can see, it takes quite a few dependent services to make the Chef server work. As we go through this course weâ€™ll learn more and more about what the Chef server itself does.
+The * on each line indicates that the service is enabled and running. As we can see, it takes quite a few dependent services to make the
+Chef server work. As we go through this course we’ll learn more and more about what the Chef server itself does.
 
 Creating Our User and Organization
-Before we can move on, we need to set up a user and an organization to belong to. Organizations are the umbrella that we will register nodes under and associate cookbooks with as we move forward. Letâ€™s start by creating our user:
+Before we can move on, we need to set up a user and an organization to belong to. Organizations are the umbrella that we will register 
+nodes under and associate cookbooks with as we move forward. Let’s start by creating our user:
 
 [root] $ # chef-server-ctl user-create USER_NAME FIRST_NAME LAST_NAME EMAIL 'PASSWORD' --filename FILE_NAME
+          
 [root] $ chef-server-ctl user-create keith Keith Thompson keith@linuxacademy.com 'p@ssw0rd' --filename /home/user/keith.pem
 
-This will create a username of keith and some extra metadata. An important thing to notice here is that the --filename output is an RSA key that we can use to interact with the Chef server from our workstation later on. Our next step will be creating an organization and setting ourself as the first admin user. We can do this using a similar subcommand on the chef-server-ctl utility:
+This will create a username of keith and some extra metadata. An important thing to notice here is that the --filename output is an RSA key
+ that we can use to interact with the Chef server from our workstation later on. Our next step will be creating an organization and setting
+ ourself as the first admin user. We can do this using a similar subcommand on the chef-server-ctl utility:
 
 [root] $ # chef-server-ctl org-create SHORT_ORG_NAME 'FULL_ORG_NAME' --association_user USER_NAME --filename FILE_NAME
 [root] $ chef-server-ctl org-create linuxacademy 'Linux Academy, Inc.' --association_user keith --filename linuxacademy-validator.pem
 
-This command is very similar to our user creation command, but it is important to note that there are some validation rules for the SHORT_ORG_NAME that we need to follow:
+This command is very similar to our user creation command, but it is important to note that there are some validation rules for the
+SHORT_ORG_NAME that we need to follow:
 
 1. Must start with a lowercase letter or number.
 2. Can only contain lowercase letters, digits, hyphens, and underscores.
 3. Must be between 1 and 255 characters long.
 
-The --association_user flag will take an existing userâ€™s username and associate it with the admin security group on the Chef server. Lastly, the --filename flag stores off the organizationâ€™s validator pem. We wonâ€™t be using this file during this course.
+The --association_user flag will take an existing user’s username and associate it with the admin security group on the Chef server. 
+Lastly, the --filename flag stores off the organization’s validator pem. We won’t be using this file during this course.
 
 
 Adding chef-manage Web UI
-The last thing weâ€™re going to do with our Chef server right now is install a web UI add-on called â€œChef Manageâ€. This add-on gives us a web-based way to see all of the Chef related information that weâ€™ll need around our organization including node information, cookbook versions, and more. Once again, we will install this add-on using the chef-server-ctl utility:
+The last thing we’re going to do with our Chef server right now is install a web UI add-on called “Chef Manage”. This add-on gives us a
+ web-based way to see all of the Chef related information that we’ll need around our organization including node information, cookbook 
+ versions, and more. Once again, we will install this add-on using the chef-server-ctl utility:
 
 [root] $ chef-server-ctl install chef-manage
 Note: this installation can take quite awhile.
@@ -76,4 +86,215 @@ yes
 
 Note: You'll will need to close the license agreement by hitting q before you can type `yes`.
 
-After we accept the license agreement then another chef-client run will occur configuring the services managed by chef-manage. Once the reconfiguration has finished, we can access the UI by going to https://SERVER_PUBLIC_IP. We need to tell the browser that we understand that the website is using a self-signed certificate, and after we do that we can see that there is a sign in form. Weâ€™ll ensure that the username/password created earlier works, and then weâ€™re ready to move forward.
+After we accept the license agreement then another chef-client run will occur configuring the services managed by chef-manage.
+ Once the reconfiguration has finished, we can access the UI by going to https://SERVER_PUBLIC_IP. We need to tell the browser 
+ that we understand that the website is using a self-signed certificate, and after we do that we can see that there is a sign in form. 
+ We’ll ensure that the username/password created earlier works, and then we’re ready to move forward.
+ 
+ 
+ 
+ **********************************************************************************************************************************************
+ $ cd /tmp
+$ pwd
+/tmp
+$ curl -O https://packages.chef.io/files/stable/chef-server/12.17.33/el/7/chef-server-core-12.17.33-1.el7.x86_64.rpm
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  258M  100  258M    0     0  93.7M      0  0:00:02  0:00:02 --:--:-- 93.6M
+$ rpm -Uvh chef-server-core-12.17.33-1.el7.x86_64.rpm
+warning: chef-server-core-12.17.33-1.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a:NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:chef-server-core-12.17.33-1.el7  ################################# [100%]
+$ chef-server-ctl reconfigure
+Starting Chef Client, version 12.21.31
+resolving cookbooks for run list: ["private-chef::default"]
+Synchronizing Cookbooks:
+  - private-chef (0.1.1)
+  - enterprise (0.11.0)
+  - openssl (8.1.2)
+  - runit (4.0.4)
+  - packagecloud (0.3.0)
+  - yum-epel (2.1.2)
+  - compat_resource (12.19.1)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+/var/opt/opscode/local-mode-cache/cookbooks/packagecloud/resources/repo.rb:10: warning: constant ::Fixnum is deprecated
+Recipe: private-chef::default
+  * directory[/etc/opscode] action create (up to date)
+  * directory[/etc/opscode/logrotate.d] action create
+    - create new directory /etc/opscode/logrotate.d
+    - change mode from '' to '0755'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+
+  ================================================================================
+  Recipe Compile Error in /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/default.rb
+  ================================================================================
+
+  Chef::Exceptions::NoSuchResourceType
+  ------------------------------------
+  Cannot find a resource for component_runit_supervisor on centos version 7.6.1810
+
+  Cookbook Trace:
+  ---------------
+    /var/opt/opscode/local-mode-cache/cookbooks/enterprise/recipes/runit.rb:28:in `from_file'
+    /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/default.rb:108:in `from_file'
+
+  Relevant File Content:
+  ----------------------
+  /var/opt/opscode/local-mode-cache/cookbooks/enterprise/recipes/runit.rb:
+
+   21:  node.override['runit']['sv_bin']       = "#{install_path}/embedded/bin/sv"
+   22:  node.override['runit']['svlogd_bin']   = "#{install_path}/embedded/bin/svlogd"
+   23:  node.override['runit']['chpst_bin']    = "#{install_path}/embedded/bin/chpst"
+   24:  node.override['runit']['service_dir']  = "#{install_path}/service"
+   25:  node.override['runit']['sv_dir']       = "#{install_path}/sv"
+   26:  node.override['runit']['lsb_init_dir'] = "#{install_path}/init"
+   27:
+   28>> component_runit_supervisor node['enterprise']['name'] do
+   29:    ctl_name node[node['enterprise']['name']]['ctl_name'] ||
+   30:             "#{node['enterprise']['name']}-ctl"
+   31:    sysvinit_id node[node['enterprise']['name']]['sysvinit_id']
+   32:    install_path node[node['enterprise']['name']]['install_path']
+   33:  end
+   34:
+
+  System Info:
+  ------------
+  chef_version=12.21.31
+  platform=centos
+  platform_version=7.6.1810
+  ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+  program_name=/opt/opscode/embedded/bin/chef-client
+  executable=/opt/opscode/embedded/bin/chef-client
+
+
+  Running handlers:
+  Running handlers complete
+  Chef Client failed. 1 resources updated in 04 seconds
+[2019-12-24T05:53:55+00:00] FATAL: Stacktrace dumped to /var/opt/opscode/local-mode-cache/chef-stacktrace.out
+[2019-12-24T05:53:55+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-24T05:53:55+00:00] FATAL: Chef::Exceptions::NoSuchResourceType: Cannot find a resource forcomponent_runit_supervisor on centos version 7.6.1810
+$ chef-server-ctl service-list
+$ chef-server-ctl install chef-manage
+Starting Chef Client, version 12.21.31
+resolving cookbooks for run list: ["private-chef::add_ons_wrapper"]
+Synchronizing Cookbooks:
+  - private-chef (0.1.1)
+  - enterprise (0.11.0)
+  - openssl (8.1.2)
+  - runit (4.0.4)
+  - packagecloud (0.3.0)
+  - yum-epel (2.1.2)
+  - compat_resource (12.19.1)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+/var/opt/opscode/local-mode-cache/cookbooks/packagecloud/resources/repo.rb:10: warning: constant ::Fixnum is deprecatedConverging 4 resources
+Recipe: private-chef::add_ons_wrapper  * ruby_block[addon_install_notification_chef-manage] action nothing (skipped due to action :nothing)  * remote_file[/var/opt/opscode/local-mode-cache/chef-manage-2.5.16-1.el7.x86_64.rpm] action create
+    - create new file /var/opt/opscode/local-mode-cache/chef-manage-2.5.16-1.el7.x86_64.rpm
+    - update content in file /var/opt/opscode/local-mode-cache/chef-manage-2.5.16-1.el7.x86_64.rpm from none to 8b14a7
+    (file sizes exceed 10000000 bytes, diff output suppressed)
+  * ruby_block[locate_addon_package_chef-manage] action run
+    - execute the ruby block locate_addon_package_chef-manage
+  * yum_package[chef-manage] action install
+    - install version 2.5.16-1.el7 of package chef-manage
+  * ruby_block[addon_install_notification_chef-manage] action create
+    - execute the ruby block addon_install_notification_chef-manage
+
+Running handlers:
+-- Installed Add-On Package: chef-manage
+  - #<Class:0x00000000034ec0c0>::AddonInstallHandler
+Running handlers complete
+
+Deprecated features used!
+  Property `state` of resource `openssl_x509` overwrites an existing method. Please use a differentproperty name. This will raise an exception in Chef 13. at 1 location:
+    - /var/opt/opscode/local-mode-cache/cookbooks/openssl/resources/x509.rb:12:in `class_from_file'
+   See https://docs.chef.io/deprecations_property_name_collision.html for further details.
+
+Chef Client finished, 4/5 resources updated in 25 seconds
+
+$ chef-server-ctl reconfigure
+Starting Chef Client, version 12.21.31
+resolving cookbooks for run list: ["private-chef::default"]
+Synchronizing Cookbooks:
+  - private-chef (0.1.1)
+  - enterprise (0.11.0)
+  - openssl (8.1.2)
+  - runit (4.0.4)
+  - packagecloud (0.3.0)
+  - yum-epel (2.1.2)
+  - compat_resource (12.19.1)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+/var/opt/opscode/local-mode-cache/cookbooks/packagecloud/resources/repo.rb:10: warning: constant ::Fixnum is deprecated
+Recipe: private-chef::default  * directory[/etc/opscode] action create (up to date)
+  * directory[/etc/opscode/logrotate.d] action create (up to date)
+
+  ================================================================================
+  Recipe Compile Error in /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/default.rb
+  ================================================================================
+
+  Chef::Exceptions::NoSuchResourceType
+  ------------------------------------
+  Cannot find a resource for component_runit_supervisor on centos version 7.6.1810
+
+  Cookbook Trace:
+  ---------------
+    /var/opt/opscode/local-mode-cache/cookbooks/enterprise/recipes/runit.rb:28:in `from_file'
+    /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/default.rb:108:in `from_file'
+
+  Relevant File Content:
+  ----------------------
+  /var/opt/opscode/local-mode-cache/cookbooks/enterprise/recipes/runit.rb:
+
+   21:  node.override['runit']['sv_bin']       = "#{install_path}/embedded/bin/sv"
+   22:  node.override['runit']['svlogd_bin']   = "#{install_path}/embedded/bin/svlogd"
+   23:  node.override['runit']['chpst_bin']    = "#{install_path}/embedded/bin/chpst"
+   24:  node.override['runit']['service_dir']  = "#{install_path}/service"
+   25:  node.override['runit']['sv_dir']       = "#{install_path}/sv"
+   26:  node.override['runit']['lsb_init_dir'] = "#{install_path}/init"
+   27:
+   28>> component_runit_supervisor node['enterprise']['name'] do
+   29:    ctl_name node[node['enterprise']['name']]['ctl_name'] ||
+   30:             "#{node['enterprise']['name']}-ctl"
+   31:    sysvinit_id node[node['enterprise']['name']]['sysvinit_id']
+   32:    install_path node[node['enterprise']['name']]['install_path']
+   33:  end
+   34:
+
+  System Info:
+  ------------
+  chef_version=12.21.31
+  platform=centos
+  platform_version=7.6.1810
+  ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+  program_name=/opt/opscode/embedded/bin/chef-client
+  executable=/opt/opscode/embedded/bin/chef-client
+
+
+  Running handlers:
+  Running handlers complete
+  Chef Client failed. 0 resources updated in 03 seconds
+[2019-12-24T05:57:36+00:00] FATAL: Stacktrace dumped to /var/opt/opscode/local-mode-cache/chef-stacktrace.out
+[2019-12-24T05:57:36+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-24T05:57:36+00:00] FATAL: Chef::Exceptions::NoSuchResourceType: Cannot find a resource forcomponent_runit_supervisor on centos version 7.6.1810
+$$ chef-manage-ctl reconfigure
+To use this software, you must agree to the terms of the software license agreement.
+Press any key to continue.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
