@@ -45,6 +45,8 @@ nodes under and associate cookbooks with as we move forward. Let’s start by crea
 [root] $ # chef-server-ctl user-create USER_NAME FIRST_NAME LAST_NAME EMAIL 'PASSWORD' --filename FILE_NAME
           
 [root] $ chef-server-ctl user-create keith Keith Thompson keith@linuxacademy.com 'p@ssw0rd' --filename /home/user/keith.pem
+         
+		 chef-server-ctl user-create Djspys Divya N djspy.java@gmail.com 'p@ssw0rd' --filename /home/user/dj.pem
 
 This will create a username of keith and some extra metadata. An important thing to notice here is that the --filename output is an RSA key
  that we can use to interact with the Chef server from our workstation later on. Our next step will be creating an organization and setting
@@ -90,23 +92,21 @@ After we accept the license agreement then another chef-client run will occur co
  Once the reconfiguration has finished, we can access the UI by going to https://SERVER_PUBLIC_IP. We need to tell the browser 
  that we understand that the website is using a self-signed certificate, and after we do that we can see that there is a sign in form. 
  We’ll ensure that the username/password created earlier works, and then we’re ready to move forward.
- 
- 
- 
+
+
  **********************************************************************************************************************************************
- $ cd /tmp
-$ pwd
-/tmp
-$ curl -O https://packages.chef.io/files/stable/chef-server/12.17.33/el/7/chef-server-core-12.17.33-1.el7.x86_64.rpm
+
+[root@tmp]# curl -O https://packages.chef.io/files/stable/chef-server/12.17.33/el/7/chef-server-core-12.17.33-1.el7.x86_64.rpm
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  258M  100  258M    0     0  93.7M      0  0:00:02  0:00:02 --:--:-- 93.6M
-$ rpm -Uvh chef-server-core-12.17.33-1.el7.x86_64.rpm
+[root@tmp]# rpm -Uvh chef-server-core-12.17.33-1.el7.x86_64.rpm
 warning: chef-server-core-12.17.33-1.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a:NOKEY
 Preparing...                          ################################# [100%]
 Updating / installing...
    1:chef-server-core-12.17.33-1.el7  ################################# [100%]
-$ chef-server-ctl reconfigure
+
+[root@tmp]# chef-server-ctl reconfigure
 Starting Chef Client, version 12.21.31
 resolving cookbooks for run list: ["private-chef::default"]
 Synchronizing Cookbooks:
@@ -157,27 +157,2002 @@ Recipe: private-chef::default
    30:             "#{node['enterprise']['name']}-ctl"
    31:    sysvinit_id node[node['enterprise']['name']]['sysvinit_id']
    32:    install_path node[node['enterprise']['name']]['install_path']
-   33:  end
-   34:
-
-  System Info:
-  ------------
-  chef_version=12.21.31
-  platform=centos
-  platform_version=7.6.1810
-  ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
-  program_name=/opt/opscode/embedded/bin/chef-client
-  executable=/opt/opscode/embedded/bin/chef-client
-
-
-  Running handlers:
-  Running handlers complete
-  Chef Client failed. 1 resources updated in 04 seconds
-[2019-12-24T05:53:55+00:00] FATAL: Stacktrace dumped to /var/opt/opscode/local-mode-cache/chef-stacktrace.out
-[2019-12-24T05:53:55+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
 [2019-12-24T05:53:55+00:00] FATAL: Chef::Exceptions::NoSuchResourceType: Cannot find a resource forcomponent_runit_supervisor on centos version 7.6.1810
-$ chef-server-ctl service-list
-$ chef-server-ctl install chef-manage
+ +++ /opt/opscode/embedded/bin/.chef-cookbook_migration20191225-1420-1xll5dd.sh      2019-12-25 18:42:04.465819484 +0000
+    @@ -1 +1,81 @@
+    +#!/opt/opscode/embedded/bin/escript
+    +
+    +%% using compiled mode gives more informative error traces
+    +-mode(compile).
+    +
+    +-define(MAGIC_NUMBER, <<16#b00c:16/integer>>).
+    +-define(OLD_COOKBOOK_PATH, "/var/opt/opscode/opscode-chef/checksum/").
+    +-define(BOOKSHELF_PATH, "/var/opt/opscode/bookshelf/").
+    +-define(BOOKSHELF_DATA_PATH, "/var/opt/opscode/bookshelf/data/").
+    +-define(NEW_BOOKSHELF_CONTAINER, ?BOOKSHELF_DATA_PATH ++ "bookshelf/").
+    +
+    +main(_) ->
+    +    ok = create_destination(),
+    +    ok = move_cookbooks().
+    +
+    +create_destination() ->
+    +    create_directory_if_needed(?BOOKSHELF_PATH),
+    +    create_directory_if_needed(?BOOKSHELF_DATA_PATH),
+    +    create_directory_if_needed(?NEW_BOOKSHELF_CONTAINER).
+    +
+    +create_directory_if_needed(Path) ->
+    +    DummyPath = filename:join(Path, "for-ensure"),
+    +    case filelib:ensure_dir(DummyPath) of
+    +        ok ->
+    +            ok;
+    +        Error ->
+    +            erlang:error(Error)
+    +    end.
+    +
+    +move_cookbooks() ->
+    +    case file:list_dir(?OLD_COOKBOOK_PATH) of
+    +        {ok, Orgs} ->
+    +            ok = move_orgs(Orgs);
+    +        _ ->
+    +            % no files (e.g., a fresh install?), so nothing to migrate, just return
+    +            ok
+    +    end.
+    +
+    +move_orgs([]) ->
+    +    ok;
+    +move_orgs([Org|Rest]) ->
+    +    Path = ?OLD_COOKBOOK_PATH ++ Org,
+    +    {ok, Dirs} = file:list_dir(Path),
+    +    ok = move_dirs(Org, Dirs),
+    +    ok = move_orgs(Rest).
+    +
+    +move_dirs(_, []) ->
+    +    ok;
+    +move_dirs(Org, [Dir|Rest]) ->
+    +    Path = ?OLD_COOKBOOK_PATH ++ Org ++ "/" ++ Dir,
+    +    {ok, Files} = file:list_dir(Path),
+    +    ok = move_files(Org, Dir, Files),
+    +    ok = move_dirs(Org, Rest).
+    +
+    +move_files(_, _, []) ->
+    +    ok;
+    +move_files(Org, Dir, [File|Rest]) ->
+    +    OldPath = ?OLD_COOKBOOK_PATH ++ Org ++ "/" ++ Dir ++ "/" ++ File,
+    +    NewPath = ?NEW_BOOKSHELF_CONTAINER ++ new_file_name(Org, File),
+    +    update_header(OldPath, NewPath),
+    +    ok = move_files(Org, Dir, Rest).
+    +
+    +new_file_name(Org, File) ->
+    +    "organization-" ++ Org ++ "%2Fchecksum-" ++ File.
+    +
+    +update_header(OldPath, NewPath) ->
+    +    case file:open(NewPath, [exclusive, write, binary]) of
+    +        {ok, Fd} ->
+    +            {ok, Data} = file:read_file(OldPath),
+    +            Ctx0 = erlang:md5_init(),
+    +            Ctx1 = erlang:md5_update(Ctx0, Data),
+    +            Digest = erlang:md5_final(Ctx1),
+    +            file:write(Fd, ?MAGIC_NUMBER),
+    +            file:write(Fd, Digest),
+    +            file:write(Fd, Data),
+    +            file:close(Fd);
+    +        {error, eexist} ->
+    +            % Already done, just return ok
+    +            ok
+    +    end.
+    - change mode from '' to '0755'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+  * directory[/var/opt/opscode/bookshelf] action create
+    - create new directory /var/opt/opscode/bookshelf
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/bookshelf] action create
+    - create new directory /var/log/opscode/bookshelf
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/bookshelf/sasl] action create
+    - create new directory /var/log/opscode/bookshelf/sasl
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/opt/opscode/bookshelf/data] action create
+    - create new directory /var/opt/opscode/bookshelf/data
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * execute[cookbook migration] action run
+    - execute /opt/opscode/embedded/bin/cookbook_migration.sh
+  * link[/opt/opscode/embedded/service/bookshelf/log] action create
+    - create symlink at /opt/opscode/embedded/service/bookshelf/log to /var/log/opscode/bookshelf
+  * template[/var/opt/opscode/bookshelf/sys.config] action create
+    - create new file /var/opt/opscode/bookshelf/sys.config
+    - update content in file /var/opt/opscode/bookshelf/sys.config from none to 893e05
+    --- /var/opt/opscode/bookshelf/sys.config   2019-12-25 18:42:06.036752438 +0000
+    +++ /var/opt/opscode/bookshelf/.chef-sys20191225-1420-9mwwkk.config 2019-12-25 18:42:06.036752438 +0000
+    @@ -1 +1,91 @@
+    +%% -*- mode: erlang -*-
+    +%% -*- tab-width: 4;erlang-indent-level: 4;indent-tabs-mode: nil -*-
+    +%% ex: ts=4 sw=4 ft=erlang et
+    +
+    +[
+    + {kernel, [{inet_dist_use_interface, {127,0,0,1}}]},
+    + %% SASL config
+    + {sasl, [
+    +         {sasl_error_logger, {file, "/var/log/opscode/bookshelf/sasl-error.log"}},
+    +         {errlog_type, error},
+    +         {error_logger_mf_dir, "/var/log/opscode/bookshelf/sasl"},      % Log directory
+    +         {error_logger_mf_maxbytes, 104857600},
+    +         {error_logger_mf_maxfiles, 10}
+    +        ]},
+    + {lager, [
+    +          %% What handlers to install with what arguments
+    +          %% The defaults for the logfiles are to rotate the files when
+    +          %% they reach 10Mb or at midnight, whichever comes first, and keep
+    +          %% the last 5 rotations. See the lager README for a description of
+    +          %% the time rotation format:
+    +          %% https://github.com/basho/lager/blob/master/README.md#internal-log-rotation
+    +          %%
+    +          %% If you wish to disable rotation, you can either set the size to 0
+    +          %% and the rotation time to "", or instead specify a 2-tuple that only
+    +          %% consists of {Logfile, Level}.
+    +          {handlers, [
+    +              {lager_console_backend, [info, {lager_default_formatter, [ "[", severity, "] ", message, "\n"]}]},
+    +              {lager_file_backend, [
+    +                                    {file, "/var/log/opscode/bookshelf/error.log"},
+    +                                    {level, error},
+    +                                    {size, 104857600},
+    +                                    {date, "$D0"},
+    +                                    {count, 10}
+    +                                   ]},
+    +              {lager_file_backend, [
+    +                                    {file, "/var/log/opscode/bookshelf/console.log"},
+    +                                    {level, info},
+    +                                    {size, 104857600},
+    +                                    {date, "$D0"},
+    +                                    {count, 10},
+    +                                    %% Removes the logging source, since currently
+    +                                    %% there's only one place in all of Bifrost that
+    +                                    %% we log from.  Also removes the PID from
+    +                                    %% the default message format.
+    +                                    {formatter_config, [date, " ", time, " [", severity, "] ", message, "\n"]}
+    +                                   ]}
+    +              ]},
+    +
+    +          %% Whether to write a crash log, and where.
+    +          %% Commented/omitted/undefined means no crash logger.
+    +          {crash_log, "/var/log/opscode/bookshelf/crash.log"},
+    +
+    +          %% Maximum size in bytes of events in the crash log - defaults to 65536
+    +          {crash_log_msg_size, 65536},
+    +
+    +          %% Maximum size of the crash log in bytes, before its rotated, set
+    +          %% to 0 to disable rotation - default is 0
+    +          {crash_log_size, 104857600},
+    +
+    +          %% What time to rotate the crash log - default is no time
+    +          %% rotation. See the lager README for a description of this format:
+    +          %% https://github.com/basho/lager/blob/master/README.org
+    +          {crash_log_date, "$D0"},
+    +
+    +          %% Number of rotated crash logs to keep, 0 means keep only the
+    +          %% current one - default is 0
+    +          {crash_log_count, 10},
+    +
+    +          %% Whether to redirect error_logger messages into lager - defaults to true
+    +          {error_logger_redirect, true},
+    +
+    +          %% Bump up the "high-water mark" (default 50), which is the
+    +          %% number of messages per second allowed to come from
+    +          %% error_logger.  This is the same as used by
+    +          %% opscode-chef-mover, FWIW.
+    +          {error_logger_hwm, 1000}
+    +        ]},
+    + {chef_secrets, [{provider, chef_secrets_fd}]},
+    + {bookshelf, [{ip, "127.0.0.1"},
+    +              {port, 4321},
+    +              {storage_type, filesystem},
+    +              {disk_store, "/var/opt/opscode/bookshelf/data"},
+    +              {stream_download, true},
+    +              {log_dir, "/var/log/opscode/bookshelf"}
+    +             ]},
+    + {webmachine, [
+    +          {log_handlers, [
+    +                         ]
+    +          }]}
+    +].
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/bookshelf/sys.config] action create
+    - unlink existing symlink to file at /opt/opscode/embedded/service/bookshelf/sys.config
+    - create symlink at /opt/opscode/embedded/service/bookshelf/sys.config to /var/opt/opscode/bookshelf/sys.config
+  * template[/var/opt/opscode/bookshelf/vm.args] action create
+    - create new file /var/opt/opscode/bookshelf/vm.args
+    - update content in file /var/opt/opscode/bookshelf/vm.args from none to cb0e8c
+    --- /var/opt/opscode/bookshelf/vm.args      2019-12-25 18:42:06.168746805 +0000
+    +++ /var/opt/opscode/bookshelf/.chef-vm20191225-1420-8oqsq2.args    2019-12-25 18:42:06.168746805 +0000
+    @@ -1 +1,37 @@
+    +## Name of the node
+    +-name bookshelf@127.0.0.1
+    +
+    +## Cookie for distributed erlang
+    +-setcookie bookshelf
+    +
+    +## Add a directory to the code path where hot patches can be
+    +## placed and easily accessed.
+    +-pa lib/patches
+    +
+    +## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
+    +## (Disabled by default..use with caution!)
+    +##-heart
+    +
+    +## Enable kernel poll
+    ++K true
+    +
+    +## Increase maximum IO ports from default (65536) to 196608
+    +## This change helps bookshelf cope with bursty
+    +## concurrent load
+    +## Once we are on R16, we should use: +Q 196608
+    +-env ERL_MAX_PORTS 196608
+    +
+    +## Increase maximum concurrent Erlang process from
+    +## default (262144) to 524288
+    +## NOTE: This value MUST be a power of 2
+    +## N band (N - 1) == 0
+    ++P 524288
+    +
+    +## Increase async worker thread pool size from
+    +## R15 default of 0 to R16 default of 10.
+    +## Async workers prevents IO from blocking the
+    +## schedulers and increases performance of IO-heavy
+    +## apps, like bookshelf.
+    ++A 10
+    +
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/bookshelf/vm.args] action create
+    - create symlink at /opt/opscode/embedded/service/bookshelf/vm.args to /var/opt/opscode/bookshelf/vm.args
+  * execute[restart_bookshelf_log_service] action nothing (skipped due to action :nothing)
+  * template[/var/log/opscode/bookshelf/config] action create
+    - create new file /var/log/opscode/bookshelf/config
+    - update content in file /var/log/opscode/bookshelf/config from none to 5e16ac
+    --- /var/log/opscode/bookshelf/config       2019-12-25 18:42:06.260742879 +0000
+    +++ /var/log/opscode/bookshelf/.chef-config20191225-1420-18h865q    2019-12-25 18:42:06.260742879 +0000
+    @@ -1 +1,4 @@
+    +# svlogd configuration
+    +s104857600
+    +n10
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+Recipe: <Dynamically Defined Resource>
+  * service[bookshelf] action nothing (skipped due to action :nothing)
+Recipe: private-chef::bookshelf
+  * runit_service[bookshelf] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/sv/bookshelf] action create
+      - create new directory /opt/opscode/sv/bookshelf
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/bookshelf/run] action create
+      - create new file /opt/opscode/sv/bookshelf/run
+      - update content in file /opt/opscode/sv/bookshelf/run from none to 35efaa
+      --- /opt/opscode/sv/bookshelf/run 2019-12-25 18:42:06.461734301 +0000
+      +++ /opt/opscode/sv/bookshelf/.chef-run20191225-1420-5ak204       2019-12-25 18:42:06.461734301 +0000
+      @@ -1 +1,6 @@
+      +#!/bin/sh
+      +exec 2>&1
+      +
+      +export PATH=/opt/opscode/embedded/bin:$PATH
+      +exec veil-env-helper --use-file -s bookshelf.access_key_id -s bookshelf.secret_access_key -o bookshelf.sql_password -- chpst -P -u opscode -U opscode env ERL_EPMD_ADDRESS=127.0.0.1 HOME=/var/opt/opscode/bookshelf /opt/opscode/embedded/service/bookshelf/bin/bookshelf foreground
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/bookshelf/log] action create
+      - create new directory /opt/opscode/sv/bookshelf/log
+      - restore selinux security context
+    * directory[/opt/opscode/sv/bookshelf/log/main] action create
+      - create new directory /opt/opscode/sv/bookshelf/log/main
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/var/log/bookshelf] action create
+      - create new directory /var/log/bookshelf
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/bookshelf/log/config] action create
+      - create new file /opt/opscode/sv/bookshelf/log/config
+      - update content in file /opt/opscode/sv/bookshelf/log/config from none to e3b0c4
+      (no diff)
+      - change mode from '' to '0644'
+      - restore selinux security context
+    * link[/var/log/bookshelf/config] action create
+      - create symlink at /var/log/bookshelf/config to /opt/opscode/sv/bookshelf/log/config
+    * template[/opt/opscode/sv/bookshelf/log/run] action create
+      - create new file /opt/opscode/sv/bookshelf/log/run
+      - update content in file /opt/opscode/sv/bookshelf/log/run from none to f7dfd6
+      --- /opt/opscode/sv/bookshelf/log/run     2019-12-25 18:42:06.918714797 +0000
+      +++ /opt/opscode/sv/bookshelf/log/.chef-run20191225-1420-defx0p   2019-12-25 18:42:06.918714797 +0000
+      @@ -1 +1,4 @@
+      +#!/bin/sh
+      +exec chpst -U opscode -u opscode \
+      +  svlogd -tt /var/log/opscode/bookshelf
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/bookshelf/env] action create
+      - create new directory /opt/opscode/sv/bookshelf/env
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * ruby_block[Delete unmanaged env files for bookshelf service] action run (skipped due to only_if)
+    * template[/opt/opscode/sv/bookshelf/check] action create (skipped due to only_if)
+    * template[/opt/opscode/sv/bookshelf/finish] action create (skipped due to only_if)
+    * directory[/opt/opscode/sv/bookshelf/control] action create
+      - create new directory /opt/opscode/sv/bookshelf/control
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * link[/opt/opscode/init/bookshelf] action create
+      - create symlink at /opt/opscode/init/bookshelf to /opt/opscode/embedded/bin/sv
+    * file[/opt/opscode/sv/bookshelf/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/bookshelf] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/run] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/log] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/log/main] action create (up to date)
+      * directory[/var/log/bookshelf] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/log/config] action create (up to date)
+      * link[/var/log/bookshelf/config] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for bookshelf service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/bookshelf/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/bookshelf/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/bookshelf/control] action create (up to date)
+      * link[/opt/opscode/init/bookshelf] action create (up to date)
+      * file[/opt/opscode/sv/bookshelf/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/bookshelf] action create
+        - create symlink at /opt/opscode/service/bookshelf to /opt/opscode/sv/bookshelf
+      * ruby_block[wait for bookshelf service socket] action run
+        - execute the ruby block wait for bookshelf service socket
+      - execute the ruby block restart_service
+    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/bookshelf] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/run] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/log] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/log/main] action create (up to date)
+      * directory[/var/log/bookshelf] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/log/config] action create (up to date)
+      * link[/var/log/bookshelf/config] action create (up to date)
+      * template[/opt/opscode/sv/bookshelf/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/bookshelf/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for bookshelf service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/bookshelf/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/bookshelf/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/bookshelf/control] action create (up to date)
+      * link[/opt/opscode/init/bookshelf] action create (up to date)
+      * file[/opt/opscode/sv/bookshelf/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/bookshelf] action create (up to date)
+      * ruby_block[wait for bookshelf service socket] action run
+        - execute the ruby block wait for bookshelf service socket
+      - execute the ruby block restart_log_service
+    * directory[/opt/opscode/service] action create (up to date)
+    * link[/opt/opscode/service/bookshelf] action create (up to date)
+    * ruby_block[wait for bookshelf service socket] action run
+      - execute the ruby block wait for bookshelf service socket
+
+Recipe: private-chef::opscode-erchef
+  * directory[/var/opt/opscode/opscode-erchef] action create
+    - create new directory /var/opt/opscode/opscode-erchef
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/opscode-erchef] action create
+    - create new directory /var/log/opscode/opscode-erchef
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/opscode-erchef/sasl] action create
+    - create new directory /var/log/opscode/opscode-erchef/sasl
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/opscode-erchef/log] action create
+    - create symlink at /opt/opscode/embedded/service/opscode-erchef/log to /var/log/opscode/opscode-erchef
+  * template[/var/opt/opscode/opscode-erchef/sys.config] action create
+    - create new file /var/opt/opscode/opscode-erchef/sys.config
+    - update content in file /var/opt/opscode/opscode-erchef/sys.config from none to fad15e
+    --- /var/opt/opscode/opscode-erchef/sys.config      2019-12-25 18:42:11.410523093 +0000
+    +++ /var/opt/opscode/opscode-erchef/.chef-sys20191225-1420-6r3y1v.config    2019-12-25 18:42:11.409523135 +0000
+    @@ -1 +1,305 @@
+    +%% -*- mode: erlang -*-
+    +%% -*- tab-width: 4;erlang-indent-level: 4;indent-tabs-mode: nil -*-
+    +%% ex: ts=4 sw=4 ft=eruby.erlang et
+    +[
+    +    {kernel, [{inet_dist_use_interface, {127,0,0,1}}]},
+    +    %% SASL config
+    +
+    +    {sasl, [
+    +        {sasl_error_logger, {file, "/var/log/opscode/opscode-erchef/sasl-error.log"}},
+    +        {errlog_type, error},
+    +        {error_logger_mf_dir, "/var/log/opscode/opscode-erchef/sasl"},      % Log directory
+    +        {error_logger_mf_maxbytes, 104857600},
+    +        {error_logger_mf_maxfiles, 10}
+    +    ]},
+    +
+    +    {lager, [
+    +        {handlers, [
+    +            {lager_console_backend, [info, {lager_default_formatter, [ "[", severity, "] ", message, "\n"]}]},
+    +            {lager_file_backend, [
+    +                {file, "/var/log/opscode/opscode-erchef/erchef.log"},
+    +                {level, info},
+    +                {size, 104857600},
+    +                {date, "$D0"},
+    +                {count, 10},
+    +                {formatter_config, [date, " ", time, " [", severity, "] ", message, "\n"]}
+    +            ]}
+    +        ]},
+    +
+    +        %% Whether to write a crash log, and where.
+    +        %% Commented/omitted/undefined means no crash logger.
+    +        {crash_log, "/var/log/opscode/opscode-erchef/crash.log"},
+    +
+    +        %% Maximum size in bytes of events in the crash log - defaults to 65536
+    +        {crash_log_msg_size, 65536},
+    +
+    +        %% Maximum size of the crash log in bytes, before its rotated, set
+    +        %% to 0 to disable rotation - default is 0
+    +        {crash_log_size, 104857600},
+    +
+    +        %% What time to rotate the crash log - default is no time
+    +        %% rotation. See the lager README for a description of this format:
+    +        %% https://github.com/basho/lager/blob/master/README.org
+    +        {crash_log_date, "$D0"},
+    +
+    +        %% Number of rotated crash logs to keep, 0 means keep only the
+    +        %% current one - default is 0
+    +        {crash_log_count, 10},
+    +
+    +        %% Whether to redirect error_logger messages into lager - defaults to true
+    +        {error_logger_redirect, true},
+    +
+    +        %% Bump up the "high-water mark" (default 50), which is the
+    +        %% number of messages per second allowed to come from
+    +        %% error_logger.  This is the same as used by
+    +        %% opscode-chef-mover, FWIW.
+    +        {error_logger_hwm, 1000}
+    +    ]},
+    +
+    +    {prometheus, [{collectors, [default,
+    +                                chef_pgsql_collector,
+    +                                chef_wm_pooler_collector]}]},
+    +
+    +    {chef_secrets, [{provider, chef_secrets_fd}]},
+    +
+    +    {oc_chef_wm, [
+    +        {ip_mode, [ ipv4 ] },
+    +        {api_version, "12.0.0"},
+    +        {server_flavor, "cs"},
+    +
+    +        {default_orgname, undefined },
+    +
+    +        {ip, "127.0.0.1"},
+    +        {port, 8000},
+    +        {reqid_header_name, "X-Request-Id"},
+    +        {auth_skew, 900},
+    +        %% currently only used by the search endpoint to bound
+    +        %% how many nodes are deserialized at a time in
+    +        %% preparing a response.
+    +        {bulk_fetch_batch_size, 5},
+    +        {superusers, [<<"pivotal">>]},
+    +        %% metrics config
+    +        {root_metric_key, "chefAPI"},
+    +
+    +        {authz_timeout, 2000},
+    +        {authz_fanout, 20},
+    +
+    +        {reindex_batch_size, 10},
+    +
+    +        {enable_actions, true},
+    +        {ldap, []},
+    +        %% these are used for reporting on license status on the
+    +        %% license endpoint; it would have been nice to give these
+    +        %% their own logical section, but erlang requires these to
+    +        %% be part of a loaded application
+    +        {node_license, 25},
+    +        {upgrade_url, <<"http://www.chef.io/contact/on-premises-simple">>},
+    +        {actions_host, "127.0.0.1"},
+    +        {actions_port, 5672 },
+    +        {actions_user, <<"actions">>},
+    +        {actions_vhost, <<"/analytics">>},
+    +        {actions_exchange, <<"actions">>},
+    +        {actions_fqdn, <<"workstation.example.com">>},
+    +        {max_request_size, 1000000},
+    +        {server_version, ""},
+    +        {health_ping_timeout, 400},
+    +        {health_ping_modules, [
+    +            oc_chef_authz,
+    +            oc_chef_action,
+    +            chef_index,
+    +            chef_sql,
+    +            chef_solr
+    +        ]},
+    +        {base_resource_url, host_header},
+    +        {bulk_fetch_batch_size, 5},
+    +        {strict_search_result_acls, false},
+    +
+    +        {rabbitmq, [
+    +            {management,[
+    +                {user, "rabbitmgmt"},
+    +                {port, 15672},
+    +                % rabbitmq management http connection pool
+    +                {rabbitmq_actions_management_service, [
+    +                    {root_url, "https://127.0.0.1:15672/api"},
+    +                    {timeout, 30000},
+    +                    {init_count, 25},
+    +                    {max_count, 100},
+    +                    {cull_interval, {60, sec}},
+    +                    {max_age, {70, sec}},
+    +                    {max_connection_duration, {70, sec}},
+    +
+    +                    {ibrowse_options, [
+    +                        {connect_timeout, 10000}
+    +                    ]}
+    +                ]}
+    +            ]},
+    +            {monitoring, [
+    +                {queue_length_monitor_enabled, true},
+    +                {queue_length_monitor_vhost, "/analytics"},
+    +                {queue_length_monitor_queue, "alaska"},
+    +                {queue_length_monitor_millis, 30000},
+    +                {queue_length_monitor_timeout_millis, 5000},
+    +                {drop_on_full_capacity, true},
+    +                {prevent_erchef_startup_on_full_capacity, false},
+    +                {queue_at_capacity_affects_overall_status, false}
+    +            ]}
+    +        ]}
+    +    ]},
+    +
+    +    {chef_authn, [
+    +        {secrets_module, {chef_secrets, get, [{default, [<<"chef-server">>, <<"webui_pub_key">>]}]}},
+    +        {keygen_cache_size, 10},
+    +        {keygen_start_size, 0},
+    +        {keygen_timeout, 1000},
+    +        {keygen_size, 2048}
+    +    ]},
+    +
+    +    {oc_chef_authz, [
+    +        {authz_root_url, "http://127.0.0.1:9463" },
+    +        {authz_service, [
+    +            {root_url, "http://127.0.0.1:9463" },
+    +            {timeout, 2000},
+    +            {init_count, 25},
+    +            {max_count, 100},
+    +            {queue_max, 50},
+    +            {cull_interval, {1, min}},
+    +            {max_age, {70, sec}},
+    +            {max_connection_duration, {70, sec}},
+    +            {ibrowse_options, [{connect_timeout, 5000}]}
+    +        ]},
+    +        {cleanup_batch_size, 0}
+    +    ]},
+    +
+    +    {chef_db, [
+    +        {bulk_fetch_batch_size, 5}
+    +    ]},
+    +
+    +    {chef_index, [
+    +        {ip_mode, [ ipv4 ] },
+    +        {rabbitmq_host, "127.0.0.1"},
+    +        {rabbitmq_port, 5672 },
+    +        {rabbitmq_user, <<"chef">>},
+    +        {rabbitmq_vhost, <<"/chef">>},
+    +        {rabbitmq_exchange, <<"">>},
+    +        {search_provider, solr},
+    +        {search_queue_mode, rabbitmq},
+    +        {search_batch_max_size, 5000000},
+    +        {search_batch_max_wait, 10},
+    +        {reindex_sleep_min_ms, 500},
+    +        {reindex_sleep_max_ms, 2000},
+    +        {reindex_item_retries, 3},
+    +        {solr_elasticsearch_major_version, 0},
+    +        {solr_service, [
+    +            {root_url, "http://127.0.0.1:8983/solr"},
+    +            {timeout, 30000},
+    +            {init_count, 25},
+    +            {max_count, 100},
+    +            {cull_interval, {1, min}},
+    +            {max_age, {70, sec}},
+    +            {max_connection_duration, {70,sec}},
+    +            {ibrowse_options, [{connect_timeout, 10000}]}
+    +        ]},
+    +        {rabbitmq_index_management_service, [
+    +            {enabled, true},
+    +            {user, "rabbitmgmt"},
+    +            {root_url, "https://127.0.0.1:15672/api"},
+    +            {timeout, 30000},
+    +            {init_count, 25},
+    +            {max_count, 100},
+    +            {cull_interval, {60, sec}},
+    +            {max_age, {70, sec}},
+    +            {max_connection_duration, {70, sec}},
+    +
+    +            {ibrowse_options, [
+    +                {connect_timeout, 10000}
+    +            ]}
+    +        ]}
+    +    ]},
+    +
+    +    {chef_objects, [
+    +        {s3_url, "https://workstation.example.com"},
+    +        {s3_external_url, host_header},
+    +        {s3_platform_bucket_name, "bookshelf"},
+    +        {s3_url_ttl, 28800},
+    +        {s3_url_expiry_window_size, off},
+    +        {s3_parallel_ops_timeout, 5000},
+    +        {s3_parallel_ops_fanout, 20},
+    +        {depsolver_timeout, 5000},
+    +        {depsolver_pooler_timeout, 0}
+    +    ]},
+    +
+    +
+    +    {stats_hero, [
+    +        {udp_socket_pool_size, 20 },
+    +        {protocol, estatsd},
+    +        {estatsd_host, "127.0.0.1"},
+    +        {estatsd_port, 9466}
+    +    ]},
+    +
+    +    {opscoderl_httpc, [
+    +        {pooler_timeout, 0}
+    +    ]},
+    +
+    +    {sqerl, [
+    +        {db_driver_mod, sqerl_pgsql_client},
+    +        {config_cb, {chef_secrets_sqerl, config, [{<<"opscode_erchef">>, <<"sql_password">>}]}},
+    +        {ip_mode, [ ipv4 ] },
+    +        %% Database connection parameters
+    +        {db_host, "127.0.0.1"},
+    +        {db_port, 5432},
+    +        {db_user, "opscode_chef"},
+    +        {db_name, "opscode_chef" },
+    +        {idle_check, 10000},
+    +        {pooler_timeout, 2000},
+    +        {db_timeout, 5000},
+    +        {prepared_statements, {oc_chef_sql, statements, [pgsql]}},
+    +        {column_transforms, [
+    +            {<<"created_at">>, {sqerl_transformers, convert_YMDHMS_tuple_to_datetime}},
+    +            {<<"updated_at">>, {sqerl_transformers, convert_YMDHMS_tuple_to_datetime}}
+    +        ]}
+    +    ]},
+    +
+    +    {webmachine, [
+    +        {log_handlers, [
+    +            {oc_wm_request_logger, [
+    +                {file, "/var/log/opscode/opscode-erchef/requests.log"},
+    +                {file_size, 100},  %% Size in MB
+    +                {files, 10},
+    +                {annotations, [req_id, org_name, msg, darklaunch, perf_stats, user, req_api_version]}
+    +            ]}
+    +        ]}
+    +    ]},
+    +
+    +    {ibrowse, [
+    +        {default_max_sessions, 256},
+    +        {default_max_pipeline_size, 1}
+    +    ]},
+    +
+    +    {pooler, [
+    +        {pools, [
+    +            [
+    +                {name, sqerl},
+    +                {max_count, 20},
+    +                {init_count, 20},
+    +                {start_mfa, {sqerl_client, start_link, []}},
+    +                {queue_max, 20}
+    +            ],
+    +            [
+    +                {name, chef_depsolver},
+    +                {max_count, 5},
+    +                {init_count, 5},
+    +                {queue_max, 50},
+    +                {start_mfa, {chef_depsolver_worker, start_link, []}}
+    +            ]
+    +        ]
+    +    },
+    +
+    +    {metrics_module, folsom_metrics}
+    +]}
+    +
+    +    ,
+    +    {ssl, [
+    +        {session_cb, noop_session_cache}
+    +    ]}
+    +].
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * execute[remove_erchef_siz_files] action run
+    - execute rm -f *.siz
+  * execute[remove_erchef_siz_files] action nothing (skipped due to action :nothing)
+  * link[/opt/opscode/embedded/service/opscode-erchef/sys.config] action create
+    - unlink existing symlink to file at /opt/opscode/embedded/service/opscode-erchef/sys.config
+    - create symlink at /opt/opscode/embedded/service/opscode-erchef/sys.config to /var/opt/opscode/opscode-erchef/sys.config
+  * template[/var/opt/opscode/opscode-erchef/vm.args] action create
+    - create new file /var/opt/opscode/opscode-erchef/vm.args
+    - update content in file /var/opt/opscode/opscode-erchef/vm.args from none to 85814e
+    --- /var/opt/opscode/opscode-erchef/vm.args 2019-12-25 18:42:11.618514216 +0000
+    +++ /var/opt/opscode/opscode-erchef/.chef-vm20191225-1420-1mgzacd.args      2019-12-25 18:42:11.618514216 +0000
+    @@ -1 +1,33 @@
+    +## Name of the node
+    +-name erchef@127.0.0.1
+    +
+    +## Cookie for distributed erlang
+    +-setcookie erchef
+    +
+    +## Enable SMP even on single-core machines
+    +## The Erchef keygen cache feature uses
+    +## enif_send, which does not work on single-
+    +## core machines unless SMP is enabled.
+    +-smp enable
+    +
+    +## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
+    +## (Disabled by default..use with caution!)
+    +##-heart
+    +
+    +## Enable kernel poll and a few async threads
+    ++K true
+    ++A 5
+    +
+    +## Increase number of concurrent ports/sockets
+    +-env ERL_MAX_PORTS 4096
+    +
+    +## Add directory for hot patches to the front of the code path
+    +-pa lib/patches
+    +
+    +## Tweak GC to run more often
+    +-env ERL_FULLSWEEP_AFTER 10
+    +
+    +## Increase logfile size to 10M
+    +-env RUN_ERL_LOG_MAXSIZE 10000000
+    +
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/opscode-erchef/vm.args] action create
+    - create symlink at /opt/opscode/embedded/service/opscode-erchef/vm.args to /var/opt/opscode/opscode-erchef/vm.args
+  * execute[restart_opscode-erchef_log_service] action nothing (skipped due to action :nothing)
+  * template[/var/log/opscode/opscode-erchef/config] action create
+    - create new file /var/log/opscode/opscode-erchef/config
+    - update content in file /var/log/opscode/opscode-erchef/config from none to 5e16ac
+    --- /var/log/opscode/opscode-erchef/config  2019-12-25 18:42:11.687511271 +0000
+    +++ /var/log/opscode/opscode-erchef/.chef-config20191225-1420-9romih        2019-12-25 18:42:11.687511271 +0000
+    @@ -1 +1,4 @@
+    +# svlogd configuration
+    +s104857600
+    +n10
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+Recipe: <Dynamically Defined Resource>
+  * service[opscode-erchef] action nothing (skipped due to action :nothing)
+Recipe: private-chef::opscode-erchef
+  * runit_service[opscode-erchef] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/sv/opscode-erchef] action create
+      - create new directory /opt/opscode/sv/opscode-erchef
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/opscode-erchef/run] action create
+      - create new file /opt/opscode/sv/opscode-erchef/run
+      - update content in file /opt/opscode/sv/opscode-erchef/run from none to cb6ebc
+      --- /opt/opscode/sv/opscode-erchef/run    2019-12-25 18:42:11.836504912 +0000
+      +++ /opt/opscode/sv/opscode-erchef/.chef-run20191225-1420-91ss29  2019-12-25 18:42:11.836504912 +0000
+      @@ -1 +1,8 @@
+      +#!/bin/sh
+      +exec 2>&1
+      +
+      +/opt/opscode/init/rabbitmq -w 100 start
+      +
+      +export PATH=/opt/opscode/embedded/bin:$PATH
+      +exec veil-env-helper --use-file -s chef-server.webui_pub_key -s opscode_erchef.sql_password -s bookshelf.access_key_id -s bookshelf.secret_access_key -s rabbitmq.password -s rabbitmq.management_password -s rabbitmq.actions_password -s oc_bifrost.superuser_id -o data_collector.token -o ldap.bind_password -- chpst -P  -u opscode -U opscode env ERL_EPMD_ADDRESS=127.0.0.1 HOME=/var/opt/opscode/opscode-erchef  /opt/opscode/embedded/service/opscode-erchef/bin/oc_erchef foreground
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-erchef/log] action create
+      - create new directory /opt/opscode/sv/opscode-erchef/log
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-erchef/log/main] action create
+      - create new directory /opt/opscode/sv/opscode-erchef/log/main
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/var/log/opscode-erchef] action create
+      - create new directory /var/log/opscode-erchef
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/opscode-erchef/log/config] action create
+      - create new file /opt/opscode/sv/opscode-erchef/log/config
+      - update content in file /opt/opscode/sv/opscode-erchef/log/config from none to e3b0c4
+      (no diff)
+      - change mode from '' to '0644'
+      - restore selinux security context
+    * link[/var/log/opscode-erchef/config] action create
+      - create symlink at /var/log/opscode-erchef/config to /opt/opscode/sv/opscode-erchef/log/config
+    * template[/opt/opscode/sv/opscode-erchef/log/run] action create
+      - create new file /opt/opscode/sv/opscode-erchef/log/run
+      - update content in file /opt/opscode/sv/opscode-erchef/log/run from none to f6e10e
+      --- /opt/opscode/sv/opscode-erchef/log/run        2019-12-25 18:42:12.102493560 +0000
+      +++ /opt/opscode/sv/opscode-erchef/log/.chef-run20191225-1420-191u0jt     2019-12-25 18:42:12.100493646 +0000
+      @@ -1 +1,4 @@
+      +#!/bin/sh
+      +exec chpst -U opscode -u opscode \
+      +  svlogd -tt /var/log/opscode/opscode-erchef
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-erchef/env] action create
+      - create new directory /opt/opscode/sv/opscode-erchef/env
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * ruby_block[Delete unmanaged env files for opscode-erchef service] action run (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-erchef/check] action create (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-erchef/finish] action create (skipped due to only_if)
+    * directory[/opt/opscode/sv/opscode-erchef/control] action create
+      - create new directory /opt/opscode/sv/opscode-erchef/control
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * link[/opt/opscode/init/opscode-erchef] action create
+      - create symlink at /opt/opscode/init/opscode-erchef to /opt/opscode/embedded/bin/sv
+    * file[/opt/opscode/sv/opscode-erchef/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/opscode-erchef] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/log] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/log/main] action create (up to date)
+      * directory[/var/log/opscode-erchef] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/log/config] action create (up to date)
+      * link[/var/log/opscode-erchef/config] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for opscode-erchef service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-erchef/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-erchef/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/opscode-erchef/control] action create (up to date)
+      * link[/opt/opscode/init/opscode-erchef] action create (up to date)
+      * file[/opt/opscode/sv/opscode-erchef/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/opscode-erchef] action create
+        - create symlink at /opt/opscode/service/opscode-erchef to /opt/opscode/sv/opscode-erchef
+      * ruby_block[wait for opscode-erchef service socket] action run
+        - execute the ruby block wait for opscode-erchef service socket
+      - execute the ruby block restart_service
+    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/opscode-erchef] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/log] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/log/main] action create (up to date)
+      * directory[/var/log/opscode-erchef] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/log/config] action create (up to date)
+      * link[/var/log/opscode-erchef/config] action create (up to date)
+      * template[/opt/opscode/sv/opscode-erchef/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-erchef/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for opscode-erchef service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-erchef/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-erchef/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/opscode-erchef/control] action create (up to date)
+      * link[/opt/opscode/init/opscode-erchef] action create (up to date)
+      * file[/opt/opscode/sv/opscode-erchef/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/opscode-erchef] action create (up to date)
+      * ruby_block[wait for opscode-erchef service socket] action run
+        - execute the ruby block wait for opscode-erchef service socket
+      - execute the ruby block restart_log_service
+    * directory[/opt/opscode/service] action create (up to date)
+    * link[/opt/opscode/service/opscode-erchef] action create (up to date)
+    * ruby_block[wait for opscode-erchef service socket] action run
+      - execute the ruby block wait for opscode-erchef service socket
+
+Recipe: private-chef::bootstrap
+  * execute[/opt/opscode/bin/chef-server-ctl start postgresql] action run
+    - execute /opt/opscode/bin/chef-server-ctl start postgresql
+  * execute[/opt/opscode/bin/chef-server-ctl start oc_bifrost] action run
+    - execute /opt/opscode/bin/chef-server-ctl start oc_bifrost
+  * ruby_block[bootstrap-chef-server-data] action run
+    - execute the ruby block bootstrap-chef-server-data
+  * file[/var/opt/opscode/bootstrapped] action create
+    - create new file /var/opt/opscode/bootstrapped
+    - update content in file /var/opt/opscode/bootstrapped from none to f2f299
+    --- /var/opt/opscode/bootstrapped   2019-12-25 18:42:31.071683979 +0000
+    +++ /var/opt/opscode/.chef-bootstrapped20191225-1420-4779sl 2019-12-25 18:42:31.071683979 +0000
+    @@ -1 +1,2 @@
+    +bootstrapped on 2019-12-25T18:41:09+00:00 (you punk)
+    - change mode from '' to '0600'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+Recipe: private-chef::opscode-chef-mover
+  * directory[/var/opt/opscode/opscode-chef-mover] action create
+    - create new directory /var/opt/opscode/opscode-chef-mover
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/opt/opscode/opscode-chef-mover/etc] action create
+    - create new directory /var/opt/opscode/opscode-chef-mover/etc
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/opt/opscode/opscode-chef-mover/data] action create
+    - create new directory /var/opt/opscode/opscode-chef-mover/data
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/opscode-chef-mover] action create
+    - create new directory /var/log/opscode/opscode-chef-mover
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/opscode-chef-mover/sasl] action create
+    - create new directory /var/log/opscode/opscode-chef-mover/sasl
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/opscode-chef-mover/log] action create
+    - create symlink at /opt/opscode/embedded/service/opscode-chef-mover/log to /var/log/opscode/opscode-chef-mover
+  * template[/var/opt/opscode/opscode-chef-mover/sys.config] action create
+    - create new file /var/opt/opscode/opscode-chef-mover/sys.config
+    - update content in file /var/opt/opscode/opscode-chef-mover/sys.config from none to 1da6e0
+    --- /var/opt/opscode/opscode-chef-mover/sys.config  2019-12-25 18:42:31.278675145 +0000
+    +++ /var/opt/opscode/opscode-chef-mover/.chef-sys20191225-1420-5tajhv.config        2019-12-25 18:42:31.278675145 +0000
+    @@ -1 +1,166 @@
+    +%% -*- mode: erlang -*-
+    +%% -*- tab-width: 4;erlang-indent-level: 4;indent-tabs-mode: nil -*-
+    +%% ex: ts=4 sw=4 ft=erlang et
+    +[
+    + {kernel, [{start_pg2, true},
+    +           {inet_dist_use_interface, {127,0,0,1}}
+    +          ]},
+    + %% SASL config
+    + {sasl, [
+    +         {sasl_error_logger, {file, "/var/log/opscode/opscode-chef-mover/sasl-error.log"}},
+    +         {errlog_type, error},
+    +         {error_logger_mf_dir, "/var/log/opscode/opscode-chef-mover/sasl"},      % Log directory
+    +         {error_logger_mf_maxbytes, 1073741824},
+    +         {error_logger_mf_maxfiles, 10}
+    +        ]},
+    + %% Lager Config
+    +  {lager, [
+    +          %% https://github.com/basho/lager/blob/master/README.org
+    +          {handlers, [
+    +                      {lager_console_backend,
+    +                       [error,
+    +                        {lager_default_formatter,
+    +                         [time, " [", severity, "] ",
+    +                          {error_type, [error_type, " "], ""},
+    +                          {org_name, [org_name, " (", org_id, "): "], ""}, message, "\n"]}]},
+    +
+    +                      {lager_file_backend, [
+    +                                            [{"/var/log/opscode/opscode-chef-mover/error.log", error, 1073741824, "$D0", 10},
+    +                                             {lager_default_formatter,
+    +                                              [date, " ", time, " [", severity, "] ",
+    +                                               {org_name, [org_name, " (", org_id, "): "], "no_org (no_id):"},
+    +                                               {error_type, [error_type, " "], ""},
+    +                                               message, "\n"]}],
+    +
+    +                                            [{"/var/log/opscode/opscode-chef-mover/console.log", info, 1073741824, "$D0", 10},
+    +                                             {lager_default_formatter,
+    +                                              [date, " ", time, " [", severity, "] ",
+    +                                               {org_name, [org_name, " (", org_id, "): "], "no_org (no_id):"},
+    +                                               {error_type, [error_type, " "], ""},
+    +                                               message, "\n"]}]
+    +                                           ]}
+    +                     ]},
+    +          {crash_log, "/var/log/opscode/opscode-chef-mover/crash.log"},
+    +          {crash_log_msg_size, 65536},
+    +          {crash_log_size, 10485760},
+    +          {crash_log_date, "$D0"},
+    +          {crash_log_count, 5},
+    +          {error_logger_redirect, true},
+    +          {error_logger_hwm, 1000 }
+    +         ]},
+    +
+    +  {oc_chef_authz, [
+    +                {authz_root_url, "http://127.0.0.1:9463" },
+    +                {authz_service, [{root_url, "http://127.0.0.1:9463" },
+    +                                 {timeout, 2000},
+    +                                 {init_count, 25},
+    +                                 {max_count, 100},
+    +                                 {cull_interval, {1, min}},
+    +                                 {max_age, {70, sec}},
+    +                                 {max_connection_duration, {70, sec}},
+    +                                 {ibrowse_options, [{connect_timeout, 5000}]}
+    +                                 ]},
+    +                %% COUCHDB REMOVE THESE
+    +                {couchdb_host, "127.0.0.1"},
+    +                {couchdb_port, 5987 },
+    +                %% END COUCHDB REMOVE THESE
+    +                {cleanup_batch_size, 0}
+    +               ]},
+    +
+    +  {chef_db, [
+    +             {bulk_fetch_batch_size, 5},
+    +             {cache_defaults, [{max_size, 10000 },
+    +                               {ttl, 3600}]},
+    +             %% COUCHDB REMOVE THESE
+    +             {couchdb_host, "127.0.0.1"},
+    +             {couchdb_port, 5984 }
+    +             %% END COUCHDB REMOVE THESE
+    +            ]},
+    +  {chef_objects, [
+    +                  {s3_url, "https://workstation.example.com"},
+    +                  {s3_platform_bucket_name, "bookshelf"},
+    +                  {s3_url_ttl, 28800},
+    +                  {s3_parallel_ops_timeout, 5000},
+    +                  {s3_parallel_ops_fanout, 20}
+    +                 ]},
+    +  {stats_hero, [
+    +               {udp_socket_pool_size, 5 },
+    +               {estatsd_host, "127.0.0.1"},
+    +               {estatsd_port, 9466}
+    +              ]},
+    + {chef_secrets, [{provider, chef_secrets_fd}]},
+    + {sqerl, [
+    +           %% The database system you are using (e.g. pgsql)
+    +           {db_driver_mod, sqerl_pgsql_client},
+    +
+    +           %% Database connection parameters
+    +           {config_cb, {chef_secrets_sqerl, config, [{<<"opscode_erchef">>, <<"sql_password">>}]}},
+    +           {db_host, "127.0.0.1"},
+    +           {db_port, 5432},
+    +           {db_user, "opscode_chef"},
+    +           {db_name, "opscode_chef" },
+    +           {idle_check, 10000},
+    +           {db_timeout, 5000},
+    +           {prepared_statements, {oc_chef_sql, statements, [pgsql]}},
+    +           {column_transforms,
+    +                              [{<<"created_at">>,
+    +                                {sqerl_transformers, convert_YMDHMS_tuple_to_datetime}},
+    +                               {<<"updated_at">>,
+    +                                {sqerl_transformers, convert_YMDHMS_tuple_to_datetime}}]
+    +           }
+    +         ]},
+    +
+    + {pooler, [
+    +           {pools, [[{name, sqerl},
+    +                     {max_count, 5},
+    +                     {init_count, 5},
+    +                     {start_mfa, {sqerl_client, start_link, []}}]]},
+    +           {metrics_module, folsom_metrics}
+    +          ]},
+    + {ibrowse, [
+    +            {default_max_sessions, 256},
+    +            {default_max_pipeline_size, 1 }
+    +           ]},
+    + {moser, [
+    +           {moser_dets_dir, "/var/opt/opscode/opscode-chef-mover/data"},
+    +           {couch_path, "/var/opt/opscode/couchdb/db"},
+    +            % We are not purging, these are not relevant.
+    +           {purge_chunksize, 10},
+    +           {purge_throttle, 0},
+    +           {purge_backup, false},
+    +           {purge_auth, false},
+    +           {purge_backup_dir, ""}
+    +           ]},
+    + {mover, [
+    +          % Duration to sleep between marking an org unavailable
+    +          % and proceeding with migration. For EC, we are guaranteed no
+    +          % in-flight activity for migrating orgs, % so 0 is safe.
+    +          {sleep_time, 0},
+    +
+    +          % dry_run refers to updating redis to indicate an org has
+    +          % been migrated via xdarklaunch.  However in EC, xdarklaunch
+    +          % is managed via 'reconfigure' and is not redis-based,
+    +          %
+    +          % Setting this to 'true' indicated that we will neither start
+    +          % a connection to redis, nor attempt to update redis with org migration
+    +          % results.
+    +          {dry_run, true},
+    +
+    +          % If dry_run is true, eredis host and port will be ignored.
+    +          {eredis_host, "127.0.0.1"},
+    +          {eredis_port, 16379},
+    +          {solr_url, "http://localhost:8983/solr"}
+    +         ]},
+    + {chef_reindex, [
+    +          {solr_service, [{root_url, "http://localhost:8983/solr"},
+    +                          {timeout, 30000},
+    +                          {init_count, 25},
+    +                          {max_count, 100},
+    +                          {cull_interval, {1, min}},
+    +                          {max_age, {70, sec}},
+    +                          {max_connection_duration, {70,sec}},
+    +                          {ibrowse_options, [{connect_timeout, 10000}]}]
+    +          }
+    +         ]}
+    +].
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/opscode-chef-mover/sys.config] action create
+    - unlink existing symlink to file at /opt/opscode/embedded/service/opscode-chef-mover/sys.config
+    - create symlink at /opt/opscode/embedded/service/opscode-chef-mover/sys.config to /var/opt/opscode/opscode-chef-mover/sys.config
+  * template[/var/opt/opscode/opscode-chef-mover/vm.args] action create
+    - create new file /var/opt/opscode/opscode-chef-mover/vm.args
+    - update content in file /var/opt/opscode/opscode-chef-mover/vm.args from none to 0154fa
+    --- /var/opt/opscode/opscode-chef-mover/vm.args     2019-12-25 18:42:31.336672670 +0000
+    +++ /var/opt/opscode/opscode-chef-mover/.chef-vm20191225-1420-dol5gv.args   2019-12-25 18:42:31.336672670 +0000
+    @@ -1 +1,24 @@
+    +## Name of the node
+    +-name mover@127.0.0.1
+    +
+    +## Cookie for distributed erlang
+    +-setcookie mover
+    +
+    +## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
+    +## (Disabled by default..use with caution!)
+    +##-heart
+    +
+    +## Enable kernel poll and a few async threads
+    ++K true
+    ++A 5
+    +
+    +## Increase number of concurrent ports/sockets
+    +-env ERL_MAX_PORTS 4096
+    +
+    +## Tweak GC to run more often
+    +-env ERL_FULLSWEEP_AFTER 10
+    +
+    +## Increase logfile size to 10M
+    +-env RUN_ERL_LOG_MAXSIZE 10000000
+    +
+    - change mode from '' to '0644'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/opt/opscode/embedded/service/opscode-chef-mover/vm.args] action create
+    - create symlink at /opt/opscode/embedded/service/opscode-chef-mover/vm.args to /var/opt/opscode/opscode-chef-mover/vm.args
+  * execute[restart_opscode-chef-mover_log_service] action nothing (skipped due to action :nothing)
+  * template[/var/log/opscode/opscode-chef-mover/config] action create
+    - create new file /var/log/opscode/opscode-chef-mover/config
+    - update content in file /var/log/opscode/opscode-chef-mover/config from none to 666c00
+    --- /var/log/opscode/opscode-chef-mover/config      2019-12-25 18:42:31.378670877 +0000
+    +++ /var/log/opscode/opscode-chef-mover/.chef-config20191225-1420-1g43n03   2019-12-25 18:42:31.378670877 +0000
+    @@ -1 +1,4 @@
+    +# svlogd configuration
+    +s1073741824
+    +n10
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+Recipe: <Dynamically Defined Resource>
+  * service[opscode-chef-mover] action nothing (skipped due to action :nothing)
+Recipe: private-chef::opscode-chef-mover
+  * runit_service[opscode-chef-mover] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/sv/opscode-chef-mover] action create
+      - create new directory /opt/opscode/sv/opscode-chef-mover
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/opscode-chef-mover/run] action create
+      - create new file /opt/opscode/sv/opscode-chef-mover/run
+      - update content in file /opt/opscode/sv/opscode-chef-mover/run from none to 84a978
+      --- /opt/opscode/sv/opscode-chef-mover/run        2019-12-25 18:42:31.443668103 +0000
+      +++ /opt/opscode/sv/opscode-chef-mover/.chef-run20191225-1420-pivdn8      2019-12-25 18:42:31.443668103 +0000
+      @@ -1 +1,7 @@
+      +#!/bin/sh
+      +exec 2>&1
+      +
+      +ulimit -n 32768
+      +export PATH=/opt/opscode/embedded/bin:$PATH
+      +exec veil-env-helper --use-file -s opscode_erchef.sql_password -s oc_bifrost.superuser_id -s redis_lb.password -- chpst -P -u opscode -U opscode env ERL_EPMD_ADDRESS=127.0.0.1 HOME=/var/opt/opscode/opscode-chef-mover /opt/opscode/embedded/service/opscode-chef-mover/bin/mover foreground
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-chef-mover/log] action create
+      - create new directory /opt/opscode/sv/opscode-chef-mover/log
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-chef-mover/log/main] action create
+      - create new directory /opt/opscode/sv/opscode-chef-mover/log/main
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/var/log/opscode-chef-mover] action create
+      - create new directory /var/log/opscode-chef-mover
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/opscode-chef-mover/log/config] action create
+      - create new file /opt/opscode/sv/opscode-chef-mover/log/config
+      - update content in file /opt/opscode/sv/opscode-chef-mover/log/config from none to e3b0c4
+      (no diff)
+      - change mode from '' to '0644'
+      - restore selinux security context
+    * link[/var/log/opscode-chef-mover/config] action create
+      - create symlink at /var/log/opscode-chef-mover/config to /opt/opscode/sv/opscode-chef-mover/log/config
+    * template[/opt/opscode/sv/opscode-chef-mover/log/run] action create
+      - create new file /opt/opscode/sv/opscode-chef-mover/log/run
+      - update content in file /opt/opscode/sv/opscode-chef-mover/log/run from none to b4fe24
+      --- /opt/opscode/sv/opscode-chef-mover/log/run    2019-12-25 18:42:31.577662384 +0000
+      +++ /opt/opscode/sv/opscode-chef-mover/log/.chef-run20191225-1420-1s43av2 2019-12-25 18:42:31.577662384 +0000
+      @@ -1 +1,4 @@
+      +#!/bin/sh
+      +exec chpst -U opscode -u opscode \
+      +  svlogd -tt /var/log/opscode/opscode-chef-mover
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/opscode-chef-mover/env] action create
+      - create new directory /opt/opscode/sv/opscode-chef-mover/env
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * ruby_block[Delete unmanaged env files for opscode-chef-mover service] action run (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-chef-mover/check] action create (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-chef-mover/finish] action create (skipped due to only_if)
+    * directory[/opt/opscode/sv/opscode-chef-mover/control] action create
+      - create new directory /opt/opscode/sv/opscode-chef-mover/control
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * link[/opt/opscode/init/opscode-chef-mover] action create
+      - create symlink at /opt/opscode/init/opscode-chef-mover to /opt/opscode/embedded/bin/sv
+    * file[/opt/opscode/sv/opscode-chef-mover/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/opscode-chef-mover] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/log] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/log/main] action create (up to date)
+      * directory[/var/log/opscode-chef-mover] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/log/config] action create (up to date)
+      * link[/var/log/opscode-chef-mover/config] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for opscode-chef-mover service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-chef-mover/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-chef-mover/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/opscode-chef-mover/control] action create (up to date)
+      * link[/opt/opscode/init/opscode-chef-mover] action create (up to date)
+      * file[/opt/opscode/sv/opscode-chef-mover/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/opscode-chef-mover] action create
+        - create symlink at /opt/opscode/service/opscode-chef-mover to /opt/opscode/sv/opscode-chef-mover
+      * ruby_block[wait for opscode-chef-mover service socket] action run
+        - execute the ruby block wait for opscode-chef-mover service socket
+
+      ================================================================================
+      Error executing action `run` on resource 'ruby_block[restart_service]'
+      ================================================================================
+
+      Errno::ENOMEM
+      -------------
+      Cannot allocate memory - fork(2)
+
+      Cookbook Trace:
+      ---------------
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:162:in `safe_sv_shellout'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:174:in `safe_sv_shellout!'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:202:in `restart_service'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:56:in `block (3 levels) in <class:RunitService>'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:282:in `block in <class:RunitService>'
+
+      Resource Declaration:
+      ---------------------
+      # In /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb
+
+       53:         ruby_block 'restart_service' do
+       54:           block do
+       55:             action_enable
+       56:             restart_service
+       57:           end
+       58:           action :nothing
+       59:           only_if { new_resource.restart_on_update && !new_resource.start_down }
+       60:         end
+       61:
+
+      Compiled Resource:
+      ------------------
+      # Declared in /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:53:in `block in <class:RunitService>'
+
+      ruby_block("restart_service") do
+        action [:nothing]
+        retries 0
+        retry_delay 2
+        default_guard_interpreter :default
+        block_name "restart_service"
+        declared_type :ruby_block
+        cookbook_name "private-chef"
+        block #<Proc:0x000000000509f768@/var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:54>
+        only_if { #code block }
+      end
+
+      System Info:
+      ------------
+      chef_version=12.21.31
+      platform=centos
+      platform_version=7.4.1708
+      ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+      program_name=/opt/opscode/embedded/bin/chef-client
+      executable=/opt/opscode/embedded/bin/chef-client
+
+    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/opscode-chef-mover] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/log] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/log/main] action create (up to date)
+      * directory[/var/log/opscode-chef-mover] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/log/config] action create (up to date)
+      * link[/var/log/opscode-chef-mover/config] action create (up to date)
+      * template[/opt/opscode/sv/opscode-chef-mover/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/opscode-chef-mover/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for opscode-chef-mover service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-chef-mover/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/opscode-chef-mover/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/opscode-chef-mover/control] action create (up to date)
+      * link[/opt/opscode/init/opscode-chef-mover] action create (up to date)
+      * file[/opt/opscode/sv/opscode-chef-mover/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/opscode-chef-mover] action create (up to date)
+      * ruby_block[wait for opscode-chef-mover service socket] action run
+
+        ================================================================================
+        Error executing action `run` on resource 'ruby_block[wait for opscode-chef-mover service socket]'
+        ================================================================================
+
+        Errno::ENOMEM
+        -------------
+        Cannot allocate memory - fork(2)
+
+        Cookbook Trace:
+        ---------------
+        /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:151:in `binary_exists?'
+        /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:79:in `wait_for_service'
+        /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:293:in `block (3 levels) in <class:RunitService>'
+        /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:64:in `block (3 levels) in <class:RunitService>'
+        /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:282:in `block in <class:RunitService>'
+
+        Resource Declaration:
+        ---------------------
+        # In /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb
+
+        291:         ruby_block "wait for #{new_resource.service_name} service socket" do
+        292:           block do
+        293:             wait_for_service
+        294:           end
+        295:           action :run
+        296:         end
+        297:
+
+        Compiled Resource:
+        ------------------
+        # Declared in /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:291:in `block in <class:RunitService>'
+
+        ruby_block("wait for opscode-chef-mover service socket") do
+          action [:run]
+          retries 0
+          retry_delay 2
+          default_guard_interpreter :default
+          block_name "wait for opscode-chef-mover service socket"
+          declared_type :ruby_block
+          cookbook_name "private-chef"
+          block #<Proc:0x0000000004c7f390@/var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:292>
+        end
+
+        System Info:
+        ------------
+        chef_version=12.21.31
+        platform=centos
+        platform_version=7.4.1708
+        ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+        program_name=/opt/opscode/embedded/bin/chef-client
+        executable=/opt/opscode/embedded/bin/chef-client
+
+
+      ================================================================================
+      Error executing action `run` on resource 'ruby_block[restart_log_service]'
+      ================================================================================
+
+      Errno::ENOMEM
+      -------------
+      ruby_block[wait for opscode-chef-mover service socket] (/var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb line 291) had an error: Errno::ENOMEM: Cannot allocate memory - fork(2)
+
+      Cookbook Trace:
+      ---------------
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:151:in `binary_exists?'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:79:in `wait_for_service'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:293:in `block (3 levels) in <class:RunitService>'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:64:in `block (3 levels) in <class:RunitService>'
+      /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:282:in `block in <class:RunitService>'
+
+      Resource Declaration:
+      ---------------------
+      # In /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb
+
+       62:         ruby_block 'restart_log_service' do
+       63:           block do
+       64:             action_enable
+       65:             restart_log_service
+       66:           end
+       67:           action :nothing
+       68:           only_if { new_resource.restart_on_update && !new_resource.start_down }
+       69:         end
+       70:
+
+      Compiled Resource:
+      ------------------
+      # Declared in /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:62:in `block in <class:RunitService>'
+
+      ruby_block("restart_log_service") do
+        action [:nothing]
+        retries 0
+        retry_delay 2
+        default_guard_interpreter :default
+        block_name "restart_log_service"
+        declared_type :ruby_block
+        cookbook_name "private-chef"
+        block #<Proc:0x000000000509d4b8@/var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:63>
+        only_if { #code block }
+      end
+
+      System Info:
+      ------------
+      chef_version=12.21.31
+      platform=centos
+      platform_version=7.4.1708
+      ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+      program_name=/opt/opscode/embedded/bin/chef-client
+      executable=/opt/opscode/embedded/bin/chef-client
+
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/sv/opscode-chef-mover] action create (up to date)
+    * template[/opt/opscode/sv/opscode-chef-mover/run] action create (up to date)
+    * directory[/opt/opscode/sv/opscode-chef-mover/log] action create (up to date)
+    * directory[/opt/opscode/sv/opscode-chef-mover/log/main] action create (up to date)
+    * directory[/var/log/opscode-chef-mover] action create (up to date)
+    * template[/opt/opscode/sv/opscode-chef-mover/log/config] action create (up to date)
+    * link[/var/log/opscode-chef-mover/config] action create (up to date)
+    * template[/opt/opscode/sv/opscode-chef-mover/log/run] action create (up to date)
+    * directory[/opt/opscode/sv/opscode-chef-mover/env] action create (up to date)
+    * ruby_block[Delete unmanaged env files for opscode-chef-mover service] action run (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-chef-mover/check] action create (skipped due to only_if)
+    * template[/opt/opscode/sv/opscode-chef-mover/finish] action create (skipped due to only_if)
+    * directory[/opt/opscode/sv/opscode-chef-mover/control] action create (up to date)
+    * link[/opt/opscode/init/opscode-chef-mover] action create (up to date)
+    * file[/opt/opscode/sv/opscode-chef-mover/down] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/service] action create (up to date)
+    * link[/opt/opscode/service/opscode-chef-mover] action create (up to date)
+    * ruby_block[wait for opscode-chef-mover service socket] action run
+      - execute the ruby block wait for opscode-chef-mover service socket
+
+  * log[stop runit_service[opscode-chef-mover]] action write
+
+  * runit_service[opscode-chef-mover] action down
+    - send down to runit_service[opscode-chef-mover]
+Recipe: private-chef::redis_lb
+  * directory[/var/opt/opscode/redis_lb] action create
+    - create new directory /var/opt/opscode/redis_lb
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/opt/opscode/redis_lb/etc] action create
+    - create new directory /var/opt/opscode/redis_lb/etc
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/opt/opscode/redis_lb/data] action create
+    - create new directory /var/opt/opscode/redis_lb/data
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * directory[/var/log/opscode/redis_lb] action create
+    - create new directory /var/log/opscode/redis_lb
+    - change mode from '' to '0750'
+    - change owner from '' to 'opscode'
+    - change group from '' to 'opscode'
+    - restore selinux security context
+  * link[/var/opt/opscode/redis_lb/data] action create (skipped due to not_if)
+  * template[/var/opt/opscode/redis_lb/etc/redis.conf] action create
+    - create new file /var/opt/opscode/redis_lb/etc/redis.conf
+    - update content in file /var/opt/opscode/redis_lb/etc/redis.conf from none to 054f25
+    --- /var/opt/opscode/redis_lb/etc/redis.conf        2019-12-25 18:42:40.853266513 +0000
+    +++ /var/opt/opscode/redis_lb/etc/.chef-redis20191225-1420-b4aaul.conf      2019-12-25 18:42:40.852266556 +0000
+    @@ -1 +1,34 @@
+    +daemonize no
+    +pidfile /var/opt/opscode/redis_lb/lb-redis.pid
+    +
+    +port 16379
+    +bind 127.0.0.1
+    +
+    +tcp-keepalive 60
+    +timeout 300
+    +loglevel notice
+    +logfile ""
+    +
+    +databases 16
+    +
+    +save 900 1
+    +save 300 10
+    +save 60 1000
+    +
+    +rdbcompression yes
+    +dbfilename dump.rdb
+    +dir /var/opt/opscode/redis_lb/data
+    +
+    +maxmemory 8m
+    +maxmemory-policy noeviction
+    +maxmemory-samples 3
+    +
+    +appendonly no
+    +appendfsync always
+    +
+    +no-appendfsync-on-rewrite no
+    +activerehashing no
+    +
+    +auto-aof-rewrite-percentage 50
+    +auto-aof-rewrite-min-size 16mb
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+  * execute[restart_redis_lb_log_service] action nothing (skipped due to action :nothing)
+  * template[/var/log/opscode/redis_lb/config] action create
+    - create new file /var/log/opscode/redis_lb/config
+    - update content in file /var/log/opscode/redis_lb/config from none to 79b978
+    --- /var/log/opscode/redis_lb/config        2019-12-25 18:42:40.888265020 +0000
+    +++ /var/log/opscode/redis_lb/.chef-config20191225-1420-1bctecq     2019-12-25 18:42:40.888265020 +0000
+    @@ -1 +1,4 @@
+    +# svlogd configuration
+    +s1000000
+    +n10
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    - restore selinux security context
+Recipe: <Dynamically Defined Resource>
+  * service[redis_lb] action nothing (skipped due to action :nothing)
+Recipe: private-chef::redis_lb
+  * runit_service[redis_lb] action enable
+    * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+    * directory[/opt/opscode/sv/redis_lb] action create
+      - create new directory /opt/opscode/sv/redis_lb
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/redis_lb/run] action create
+      - create new file /opt/opscode/sv/redis_lb/run
+      - update content in file /opt/opscode/sv/redis_lb/run from none to 71589d
+      --- /opt/opscode/sv/redis_lb/run  2019-12-25 18:42:40.952262288 +0000
+      +++ /opt/opscode/sv/redis_lb/.chef-run20191225-1420-18uj1ra       2019-12-25 18:42:40.952262288 +0000
+      @@ -1 +1,4 @@
+      +#!/bin/sh
+      +exec 2>&1
+      +exec /opt/opscode/embedded/bin/veil-env-helper -s REDIS_PASSWORD=redis_lb.password -- chpst -P -o 131071 -u opscode -U opscode -o 100000 env HOME="/var/opt/opscode/redis_lb" /opt/opscode/embedded/bin/redis-server /var/opt/opscode/redis_lb/etc/redis.conf
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/redis_lb/log] action create
+      - create new directory /opt/opscode/sv/redis_lb/log
+      - restore selinux security context
+    * directory[/opt/opscode/sv/redis_lb/log/main] action create
+      - create new directory /opt/opscode/sv/redis_lb/log/main
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/var/log/redis_lb] action create
+      - create new directory /var/log/redis_lb
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * template[/opt/opscode/sv/redis_lb/log/config] action create
+      - create new file /opt/opscode/sv/redis_lb/log/config
+      - update content in file /opt/opscode/sv/redis_lb/log/config from none to e3b0c4
+      (no diff)
+      - change mode from '' to '0644'
+      - restore selinux security context
+    * link[/var/log/redis_lb/config] action create
+      - create symlink at /var/log/redis_lb/config to /opt/opscode/sv/redis_lb/log/config
+    * template[/opt/opscode/sv/redis_lb/log/run] action create
+      - create new file /opt/opscode/sv/redis_lb/log/run
+      - update content in file /opt/opscode/sv/redis_lb/log/run from none to 2ac1d5
+      --- /opt/opscode/sv/redis_lb/log/run      2019-12-25 18:42:41.121255076 +0000
+      +++ /opt/opscode/sv/redis_lb/log/.chef-run20191225-1420-vf8etz    2019-12-25 18:42:41.121255076 +0000
+      @@ -1 +1,4 @@
+      +#!/bin/sh
+      +exec chpst -U opscode -u opscode \
+      +  svlogd -tt /var/log/opscode/redis_lb
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * directory[/opt/opscode/sv/redis_lb/env] action create
+      - create new directory /opt/opscode/sv/redis_lb/env
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * ruby_block[Delete unmanaged env files for redis_lb service] action run (skipped due to only_if)
+    * template[/opt/opscode/sv/redis_lb/check] action create (skipped due to only_if)
+    * template[/opt/opscode/sv/redis_lb/finish] action create (skipped due to only_if)
+    * directory[/opt/opscode/sv/redis_lb/control] action create
+      - create new directory /opt/opscode/sv/redis_lb/control
+      - change mode from '' to '0755'
+      - restore selinux security context
+    * link[/opt/opscode/init/redis_lb] action create
+      - create symlink at /opt/opscode/init/redis_lb to /opt/opscode/embedded/bin/sv
+    * file[/opt/opscode/sv/redis_lb/down] action nothing (skipped due to action :nothing)
+    * ruby_block[restart_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/redis_lb] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/run] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/log] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/log/main] action create (up to date)
+      * directory[/var/log/redis_lb] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/log/config] action create (up to date)
+      * link[/var/log/redis_lb/config] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for redis_lb service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/redis_lb/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/redis_lb/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/redis_lb/control] action create (up to date)
+      * link[/opt/opscode/init/redis_lb] action create (up to date)
+      * file[/opt/opscode/sv/redis_lb/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/redis_lb] action create
+        - create symlink at /opt/opscode/service/redis_lb to /opt/opscode/sv/redis_lb
+      * ruby_block[wait for redis_lb service socket] action run
+        - execute the ruby block wait for redis_lb service socket
+      - execute the ruby block restart_service
+    * ruby_block[restart_log_service] action run
+      * ruby_block[restart_service] action nothing (skipped due to action :nothing)
+      * ruby_block[restart_log_service] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/sv/redis_lb] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/run] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/log] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/log/main] action create (up to date)
+      * directory[/var/log/redis_lb] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/log/config] action create (up to date)
+      * link[/var/log/redis_lb/config] action create (up to date)
+      * template[/opt/opscode/sv/redis_lb/log/run] action create (up to date)
+      * directory[/opt/opscode/sv/redis_lb/env] action create (up to date)
+      * ruby_block[Delete unmanaged env files for redis_lb service] action run (skipped due to only_if)
+      * template[/opt/opscode/sv/redis_lb/check] action create (skipped due to only_if)
+      * template[/opt/opscode/sv/redis_lb/finish] action create (skipped due to only_if)
+      * directory[/opt/opscode/sv/redis_lb/control] action create (up to date)
+      * link[/opt/opscode/init/redis_lb] action create (up to date)
+      * file[/opt/opscode/sv/redis_lb/down] action nothing (skipped due to action :nothing)
+      * directory[/opt/opscode/service] action create (up to date)
+      * link[/opt/opscode/service/redis_lb] action create (up to date)
+      * ruby_block[wait for redis_lb service socket] action run
+        - execute the ruby block wait for redis_lb service socket
+      - execute the ruby block restart_log_service
+    * directory[/opt/opscode/service] action create (up to date)
+    * link[/opt/opscode/service/redis_lb] action create (up to date)
+    * ruby_block[wait for redis_lb service socket] action run
+      - execute the ruby block wait for redis_lb service socket
+
+Recipe: <Dynamically Defined Resource>
+  * service[redis_lb] action nothing (skipped due to action :nothing)
+  * service[redis_lb] action nothing (skipped due to action :nothing)
+Recipe: private-chef::redis_lb
+  * runit_service[redis_lb] action restart (up to date)
+  * template[/etc/opscode/logrotate.d/redis_lb] action create
+    - create new file /etc/opscode/logrotate.d/redis_lb
+    - update content in file /etc/opscode/logrotate.d/redis_lb from none to e6e69e
+    --- /etc/opscode/logrotate.d/redis_lb       2019-12-25 18:42:44.482111639 +0000
+    +++ /etc/opscode/logrotate.d/.chef-redis_lb20191225-1420-ytetn1     2019-12-25 18:42:44.482111639 +0000
+    @@ -1 +1,6 @@
+    +/var/log/opscode/redis_lb/*.log {
+    +  rotate 10
+    +  size 1000000
+    +  create 644 opscode opscode
+    +}
+    - change mode from '' to '0644'
+    - change owner from '' to 'root'
+    - change group from '' to 'root'
+    ================================================================================
+    Error executing action `create` on resource 'template[/etc/opscode/logrotate.d/redis_lb]'
+    ================================================================================
+
+    Errno::ENOMEM
+    -------------
+    Cannot allocate memory - fork(2)
+
+    Resource Declaration:
+    ---------------------
+    # In /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/redis_lb.rb
+
+     89: template "/etc/opscode/logrotate.d/redis_lb" do
+     90:   source "logrotate.erb"
+     91:   owner "root"
+     92:   group "root"
+     93:   mode "0644"
+     94:   variables(redis.to_hash)
+     95: end
+     96:
+
+    Compiled Resource:
+    ------------------
+    # Declared in /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/redis_lb.rb:89:in `from_file'
+
+    template("/etc/opscode/logrotate.d/redis_lb") do
+      action [:create]
+      retries 0
+      retry_delay 2
+      default_guard_interpreter :default
+      source "logrotate.erb"
+      variables {"enable"=>true, "ha"=>false, "dir"=>"/var/opt/opscode/redis_lb", "data_dir"=>"/var/opt/opscode/redis_lb/data", "log_directory"=>"/var/log/opscode/redis_lb", "log_rotation"=>{"file_maxbytes"=>1000000, "num_to_keep"=>10}, "port"=>"16379", "bind"=>"127.0.0.1", "vip"=>"127.0.0.1", "keepalive"=>"60", "timeout"=>"300", "loglevel"=>"notice", "databases"=>"16", "appendonly"=>"no", "appendfsync"=>"always", "activerehashing"=>"no", "aof_rewrite_percent"=>"50", "aof_rewrite_min_size"=>"16mb", "maxmemory"=>"8m", "maxmemory_policy"=>"noeviction", "save_frequency"=>{"900"=>"1", "300"=>"10", "60"=>"1000"}, "password"=>"0293219ef2de3e650f1b0cc6321d06dcda4a69a6197c509b6c1b9e31be2d248135f6d3365706429da0ae862b3b529a202e58"}
+      declared_type :template
+      cookbook_name "private-chef"
+      recipe_name "redis_lb"
+      mode "0644"
+      owner "root"
+      group "root"
+      path "/etc/opscode/logrotate.d/redis_lb"
+      verifications []
+      final_checksum "e6e69e180116eba9647e01c6be3a67fd4a14392d849dc6b92d4398ef3a2270dd"
+    end
+
+    System Info:
+    ------------
+    chef_version=12.21.31
+    platform=centos
+    platform_version=7.4.1708
+    ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+    program_name=/opt/opscode/embedded/bin/chef-client
+    executable=/opt/opscode/embedded/bin/chef-client
+
+Recipe: private-chef::postgresql
+  * runit_service[postgresql] action restart (up to date)
+  * execute[restart_postgresql_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/postgresql/log
+Recipe: private-chef::oc_bifrost
+  * runit_service[oc_bifrost] action restart (up to date)
+  * execute[restart_oc_bifrost_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/oc_bifrost/log
+Recipe: private-chef::oc_id
+  * runit_service[oc_id] action restart (up to date)
+  * execute[restart_oc_id_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/oc_id/log
+Recipe: private-chef::nginx
+  * runit_service[nginx] action restart
+
+    ================================================================================
+    Error executing action `restart` on resource 'runit_service[nginx]'
+    ================================================================================
+
+    Mixlib::ShellOut::ShellCommandFailed
+    ------------------------------------
+    Expected process to exit with [0], but received '1'
+    ---- Begin output of /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx ----
+    STDOUT: fail: /opt/opscode/service/nginx: unable to change to service directory: file does not exist
+    STDERR:
+    ---- End output of /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx ----
+    Ran /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx returned 1
+
+    Cookbook Trace:
+    ---------------
+    /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:174:in `tap'
+    /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:174:in `safe_sv_shellout!'
+    /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/helpers.rb:202:in `restart_service'
+    /var/opt/opscode/local-mode-cache/cookbooks/runit/libraries/provider_runit_service.rb:330:in `block in <class:RunitService>'
+
+    Resource Declaration:
+    ---------------------
+    # In /var/opt/opscode/local-mode-cache/cookbooks/enterprise/definitions/component_runit_service.rb
+
+     37:   runit_service component do
+     38:     action :enable
+     39:     retries 20
+     40:     control params[:control] if params[:control]
+     41:     options(
+     42:       log_directory: log_directory
+     43:     )
+     44:     params[:runit_attributes].each do |attr_name, attr_value|
+     45:       send(attr_name.to_sym, attr_value)
+     46:     end
+     47:   end
+     48:
+
+    Compiled Resource:
+    ------------------
+    # Declared in /var/opt/opscode/local-mode-cache/cookbooks/enterprise/definitions/component_runit_service.rb:37:in `block in from_file'
+
+    runit_service("nginx") do
+      params {:package=>"private_chef", :log_directory=>nil, :svlogd_size=>nil, :svlogd_num=>nil, :ha=>nil, :control=>nil, :runit_attributes=>{}, :action=>:enable, :name=>"nginx"}
+      provider Chef::Provider::RunitService
+      action [:enable]
+      supports {:restart=>true, :reload=>true, :status=>true}
+      retries 20
+      retry_delay 2
+      default_guard_interpreter :default
+      service_name "nginx"
+      enabled false
+      running false
+      masked nil
+      pattern "nginx"
+      status_command "/opt/opscode/embedded/bin/sv status /opt/opscode/service"
+      sv_bin "/opt/opscode/embedded/bin/sv"
+      sv_dir "/opt/opscode/sv"
+      service_dir "/opt/opscode/service"
+      lsb_init_dir "/opt/opscode/init"
+      options {:log_directory=>"/var/log/opscode/nginx"}
+      log true
+      restart_on_update true
+      run_template_name "nginx"
+      log_template_name "nginx"
+      check_script_template_name "nginx"
+      finish_script_template_name "nginx"
+      sv_templates true
+      log_dir "/var/log/nginx"
+      service_mirror # Declared in
+
+    service("nginx") do
+      provider Chef::Provider::Service::Simple
+      action [:nothing]
+      supports {:restart=>true, :reload=>true, :status=>true}
+      retries 0
+      retry_delay 2
+      default_guard_interpreter :default
+      service_name "nginx"
+      enabled nil
+      running nil
+      masked nil
+      pattern "nginx"
+      start_command "/opt/opscode/embedded/bin/sv start /opt/opscode/service/nginx"
+      stop_command "/opt/opscode/embedded/bin/sv stop /opt/opscode/service/nginx"
+      status_command "/opt/opscode/embedded/bin/sv status /opt/opscode/service/nginx"
+      restart_command "/opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx"
+    end
+
+      declared_type :runit_service
+      cookbook_name "private-chef"
+      recipe_name "nginx"
+    end
+
+    System Info:
+    ------------
+    chef_version=12.21.31
+    platform=centos
+    platform_version=7.4.1708
+    ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+    program_name=/opt/opscode/embedded/bin/chef-client
+    executable=/opt/opscode/embedded/bin/chef-client
+
+Recipe: private-chef::opscode-solr4
+  * runit_service[opscode-solr4] action restart (up to date)
+  * execute[restart_opscode-solr4_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/opscode-solr4/log
+Recipe: private-chef::opscode-expander
+  * runit_service[opscode-expander] action restart (up to date)
+  * execute[restart_opscode-expander_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/opscode-expander/log
+Recipe: private-chef::bookshelf
+  * runit_service[bookshelf] action restart (up to date)
+  * execute[restart_bookshelf_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/bookshelf/log
+Recipe: private-chef::opscode-erchef
+  * runit_service[opscode-erchef] action restart (up to date)
+  * execute[restart_opscode-erchef_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/opscode-erchef/log
+Recipe: <Dynamically Defined Resource>
+  * service[opscode-erchef] action restart
+    - restart service service[opscode-erchef]
+Recipe: private-chef::partybus
+  * execute[set initial migration level] action run
+
+    ================================================================================
+    Error executing action `run` on resource 'execute[set initial migration level]'
+    ================================================================================
+
+    Mixlib::ShellOut::ShellCommandFailed
+    ------------------------------------
+    Expected process to exit with [0], but received '1'
+    ---- Begin output of cd /opt/opscode/embedded/service/partybus && ./bin/partybus init ----
+    STDOUT:
+    STDERR: /opt/opscode/embedded/service/gem/ruby/2.4.0/gems/sequel-3.34.1/lib/sequel/database/schema_generator.rb:19: warning: constant ::Fixnum is deprecated
+    /opt/opscode/embedded/service/gem/ruby/2.4.0/gems/sequel-3.34.1/lib/sequel/database/schema_generator.rb:19: warning: constant ::Bignum is deprecated
+    ./bin/partybus:11:in `require': cannot load such file -- /opt/opscode/embedded/service/partybus/config.rb (LoadError)
+        from ./bin/partybus:11:in `<main>'
+    ---- End output of cd /opt/opscode/embedded/service/partybus && ./bin/partybus init ----
+    Ran cd /opt/opscode/embedded/service/partybus && ./bin/partybus init returned 1
+
+    Resource Declaration:
+    ---------------------
+    # In /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/partybus.rb
+
+     47: execute "set initial migration level" do
+     48:   action :nothing
+     49:   command "cd /opt/opscode/embedded/service/partybus && ./bin/partybus init"
+     50:   subscribes :run, "file[#{OmnibusHelper.bootstrap_sentinel_file}]", :delayed
+     51: end
+     52:
+
+    Compiled Resource:
+    ------------------
+    # Declared in /var/opt/opscode/local-mode-cache/cookbooks/private-chef/recipes/partybus.rb:47:in `from_file'
+
+    execute("set initial migration level") do
+      action [:nothing]
+      retries 0
+      retry_delay 2
+      default_guard_interpreter :execute
+      command "cd /opt/opscode/embedded/service/partybus && ./bin/partybus init"
+      backup 5
+      returns 0
+      user nil
+      declared_type :execute
+      cookbook_name "private-chef"
+      recipe_name "partybus"
+    end
+
+    System Info:
+    ------------
+    chef_version=12.21.31
+    platform=centos
+    platform_version=7.4.1708
+    ruby=ruby 2.4.3p205 (2017-12-14 revision 61247) [x86_64-linux]
+    program_name=/opt/opscode/embedded/bin/chef-client
+    executable=/opt/opscode/embedded/bin/chef-client
+
+Recipe: private-chef::opscode-chef-mover
+  * execute[restart_opscode-chef-mover_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/opscode-chef-mover/log
+Recipe: private-chef::redis_lb
+  * execute[restart_redis_lb_log_service] action run
+    - execute /opt/opscode/embedded/bin/sv restart /opt/opscode/sv/redis_lb/log
+
+Running handlers:
+Running handlers complete
+Chef Client failed. 321 resources updated in 03 minutes 17 seconds
+[2019-12-25T18:44:22+00:00] FATAL: Stacktrace dumped to /var/opt/opscode/local-mode-cache/chef-stacktrace.out
+[2019-12-25T18:44:22+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-25T18:44:22+00:00] FATAL: Chef::Exceptions::MultipleFailures: Multiple failures occurred:
+* Errno::ENOMEM occurred in chef run: template[/etc/opscode/logrotate.d/redis_lb] (private-chef::redis_lb line 89) had an error: Errno::ENOMEM: Cannot allocate memory - fork(2)
+* Mixlib::ShellOut::ShellCommandFailed occurred in delayed notification: runit_service[nginx] (private-chef::nginx line 37) had an error: Mixlib::ShellOut::ShellCommandFailed: Expected process to exit with [0], but received '1'
+---- Begin output of /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx ----
+STDOUT: fail: /opt/opscode/service/nginx: unable to change to service directory: file does not exist
+STDERR:
+---- End output of /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx ----
+Ran /opt/opscode/embedded/bin/sv restart /opt/opscode/service/nginx returned 1
+* Mixlib::ShellOut::ShellCommandFailed occurred in delayed notification: execute[set initial migration level] (private-chef::partybus line 47) had an error: Mixlib::ShellOut::ShellCommandFailed: Expected process to exit with [0], but received '1'
+---- Begin output of cd /opt/opscode/embedded/service/partybus && ./bin/partybus init ----
+STDOUT:
+STDERR: /opt/opscode/embedded/service/gem/ruby/2.4.0/gems/sequel-3.34.1/lib/sequel/database/schema_generator.rb:19: warning: constant ::Fixnum is deprecated
+/opt/opscode/embedded/service/gem/ruby/2.4.0/gems/sequel-3.34.1/lib/sequel/database/schema_generator.rb:19: warning: constant ::Bignum is deprecated
+./bin/partybus:11:in `require': cannot load such file -- /opt/opscode/embedded/service/partybus/config.rb (LoadError)
+        from ./bin/partybus:11:in `<main>'
+---- End output of cd /opt/opscode/embedded/service/partybus && ./bin/partybus init ----
+Ran cd /opt/opscode/embedded/service/partybus && ./bin/partybus init returned 1
+[root@tmp]# chef-server-ctl service-list
+
+[root@tmp]# chef-server-ctl install chef-manage
 Starting Chef Client, version 12.21.31
 resolving cookbooks for run list: ["private-chef::add_ons_wrapper"]
 Synchronizing Cookbooks:
@@ -214,7 +2189,7 @@ Deprecated features used!
 
 Chef Client finished, 4/5 resources updated in 25 seconds
 
-$ chef-server-ctl reconfigure
+[root@tmp]# chef-server-ctl reconfigure
 Starting Chef Client, version 12.21.31
 resolving cookbooks for run list: ["private-chef::default"]
 Synchronizing Cookbooks:
@@ -279,7 +2254,39 @@ Recipe: private-chef::default  * directory[/etc/opscode] action create (up to da
 [2019-12-24T05:57:36+00:00] FATAL: Stacktrace dumped to /var/opt/opscode/local-mode-cache/chef-stacktrace.out
 [2019-12-24T05:57:36+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
 [2019-12-24T05:57:36+00:00] FATAL: Chef::Exceptions::NoSuchResourceType: Cannot find a resource forcomponent_runit_supervisor on centos version 7.6.1810
-$$ chef-manage-ctl reconfigure
+[root@tmp]# chef-server-ctl service-list
+bookshelf*
+oc_bifrost*
+oc_id*
+opscode-chef-mover*
+opscode-erchef*
+opscode-expander*
+opscode-solr4*
+postgresql*
+redis_lb*
+[root@tmp]# chef-server-ctl user-create Djspys Divya N djspy.java@gmail.com 'p@ssw0rd' --filename /home/user/dj.pem
+ERROR: CONFIGURATION ERROR:Specified config file /etc/opscode/pivotal.rb does not exist
+[root@tmp]# chef-server-ctl install chef-manage
+Starting Chef Client, version 12.21.31
+resolving cookbooks for run list: ["private-chef::add_ons_wrapper"]
+Synchronizing Cookbooks:
+  - private-chef (0.1.1)
+  - enterprise (0.11.0)
+  - openssl (8.1.2)
+  - runit (4.0.4)
+  - packagecloud (0.3.0)
+  - yum-epel (2.1.2)
+  - compat_resource (12.19.1)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+/var/opt/opscode/local-mode-cache/cookbooks/packagecloud/resources/repo.rb:10: warning: constant ::Fixnum is deprecated
+Converging 4 resources
+Recipe: private-chef::add_ons_wrapper
+  * ruby_block[addon_install_notification_chef-manage] action nothing (skipped due to action :nothing)
+  * remote_file[/var/opt/opscode/local-mode-cache/chef-manage-2.5.16-1.el7.x86_64.rpm] action create[root@tmp]# chef-server-ctl install chef-manage                      chef-server-ctl install chef-manage^C
+[
+
+[root@tmp]# chef-manage-ctl reconfigure
 To use this software, you must agree to the terms of the software license agreement.
 Press any key to continue.
 

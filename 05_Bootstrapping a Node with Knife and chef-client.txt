@@ -1,9 +1,14 @@
-Chef utilizes a pull-based approach for configuration changes to make it to the configured nodes, and the primary tool that makes this happen is the chef-client. In this lesson, we’ll create our first node that will be managed by our chef server and see how we can deploy configuration changes to this node.
+Chef utilizes a pull-based approach for configuration changes to make it to the configured nodes, and the primary tool that makes 
+this happen is the chef-client. In this lesson, we’ll create our first node that will be managed by our chef server and see how we 
+can deploy configuration changes to this node.
 
 Bootstrapping a Node with knife:-
-Before we can start working with Chef to manage configuration, we need to have a node to work with. To do this, we will create another new CentOS 7 cloud server. We will need to log into this server the first time so that we can reset the user password, but after that most of what we do will be done from our “workstation” server.
+Before we can start working with Chef to manage configuration, we need to have a node to work with. To do this, we will create another 
+new CentOS 7 cloud server. We will need to log into this server the first time so that we can reset the user password, but after that 
+most of what we do will be done from our “workstation” server.
 
-From our workstation, we’re going to use the knife utility and the bootstrap subcommand. Let’s take a look at the help text for this utility before we actually run it:
+From our workstation, we’re going to use the knife utility and the bootstrap subcommand. Let’s take a look at the help text for this 
+utility before we actually run it:
 
 [workstation] $ knife bootstrap --help
 knife bootstrap [SSH_USER@]FQDN (options)
@@ -32,3 +37,238 @@ Before we move on, let’s talk about what happens when a chef-client run occurs. 
 8. Converge the node - Execute the run-list.
 9. Update the node object, process exception & report handlers - Update the node object on the Chef server after the chef-client run finishes successfully. Also executing the exception and report handlers in the proper order.
 10. Stop, wait for the next run - The chef-client waits until the next time it is executed.
+
+
+*********************************
+[root@workstation]# knife bootstrap --help
+knife bootstrap [PROTOCOL://][USER@]FQDN (options)
+        --bootstrap-curl-options OPTIONS
+                                     Add options to curl when install Chef Infra Client.
+        --bootstrap-install-command COMMANDS
+                                     Custom command to install Chef Infra Client.
+        --bootstrap-no-proxy [NO_PROXY_URL|NO_PROXY_IP]
+                                     Do not proxy locations for the node being bootstrapped
+        --bootstrap-preinstall-command COMMANDS
+                                     Custom commands to run before installing Chef Infra Client.
+        --bootstrap-proxy PROXY_URL  The proxy server for the node being bootstrapped.
+        --bootstrap-proxy-pass PROXY_PASS
+                                     The proxy authentication password for the node being bootstrapped.
+        --bootstrap-proxy-user PROXY_USER
+                                     The proxy authentication username for the node being bootstrapped.
+    -t TEMPLATE,                     Bootstrap Chef Infra Client using a built-in or custom template. Set to the full path of an erb template or use one of the built-in templates.
+        --bootstrap-template
+        --bootstrap-url URL          URL to a custom installation script.
+        --bootstrap-vault-file VAULT_FILE
+                                     A JSON file with a list of vault(s) and item(s) to be updated.
+        --bootstrap-vault-item VAULT_ITEM
+                                     A single vault and item to update as "vault:item".
+        --bootstrap-vault-json VAULT_JSON
+                                     A JSON string with the vault(s) and item(s) to be updated.
+        --bootstrap-version VERSION  The version of Chef Infra Client to install.
+        --bootstrap-wget-options OPTIONS
+                                     Add options to wget when installing Chef Infra Client.
+    -f CA_TRUST_PATH,                The Certificate Authority (CA) trust file used for SSL transport.
+        --ca-trust-file
+        --channel CHANNEL            Install from the given channel. Default is 'stable'. (valid options: 'stable', 'current', or 'unstable')
+        --chef-license ACCEPTANCE    Accept the license for this product and any contained products ('accept', 'accept-no-persist', or 'accept-silent')
+    -N, --node-name NAME             The node name for your new node.
+        --server-url URL             Chef Infra Server URL.
+        --chef-zero-host HOST        Host to start Chef Infra Zero on.
+        --chef-zero-port PORT        Port (or port range) to start Chef Infra Zero on. Port ranges like 1000,1010 or 8889-9999 will try all given ports until one works.
+    -k, --key KEY                    Chef Infra Server API client key.
+        --[no-]color                 Use colored output, defaults to enabled.
+    -c, --config CONFIG              The configuration file to use.
+        --config-option OPTION=VALUE Override a single configuration option.
+    -P PASSWORD,                     Authenticate to the target host with this password.
+        --connection-password
+    -p, --connection-port PORT       The port on the target node to connect to.
+    -o PROTOCOL,                     The protocol to use to connect to the target node. (valid options: 'ssh' or 'winrm')
+        --connection-protocol
+    -U, --connection-user USERNAME   Authenticate to the target host with this user account.
+        --defaults                   Accept default values for all questions.
+    -d, --disable-editing            Do not open EDITOR, just accept the data as is.
+    -e, --editor EDITOR              Set the editor to use for interactive commands.
+        --encrypt                    If 'secret' or 'secret_file' is present in your config, then encrypt data bags using it.
+    -E, --environment ENVIRONMENT    Set the Chef Infra Client environment (except for in searches, where this will be flagrantly ignored).
+        --[no-]fips                  Enable FIPS mode.
+    -j JSON_ATTRIBS,                 A JSON string to be added to the first run of chef-client.
+        --json-attributes
+        --json-attribute-file FILE   A JSON file to be used to the first run of chef-client.
+    -F, --format FORMAT              Which format to use for output. (valid options: 'summary', 'text', 'json', 'yaml', or 'pp')
+        --hint HINT_NAME[=HINT_FILE] Specify an Ohai hint to be set on the bootstrap target. Use multiple --hint options to specify multiple hints.
+    -R KERBEROS_REALM,               The Kerberos realm used for authentication.
+        --kerberos-realm
+    -S KERBEROS_SERVICE,             The Kerberos service used for authentication.
+        --kerberos-service
+        --[no-]listen                Whether a local mode (-z) server binds to a port.
+    -z, --local-mode                 Point knife commands at local repository instead of Chef Infra Server.
+    -W, --max-wait SECONDS           The maximum time to wait for the initial connection to be established.
+    -m, --msi-url URL                Location of the Chef Infra Client MSI. The default templates will prefer to download from this location. The MSI will be downloaded from https://chef.io if not provided (Windows).
+    -u, --user USER                  Chef Infra Server API client username.
+        --node-ssl-verify-mode [peer|none]
+                                     Whether or not to verify the SSL cert for all HTTPS requests.
+        --[no-]node-verify-api-cert  Verify the SSL cert for HTTPS requests to the Chef Infra Server API.
+        --policy-group POLICY_GROUP  Policy group name to use (--policy-name must also be given).
+        --policy-name POLICY_NAME    Policyfile name to use (--policy-group must also be given).
+        --sudo-preserve-home         Preserve non-root user HOME environment variable with sudo.
+        --print-after                Show the data after a destructive operation.
+        --profile PROFILE            The credentials profile to select.
+    -r, --run-list RUN_LIST          Comma separated list of roles/recipes to apply.
+    -s, --secret SECRET              The secret key to use to encrypt data bag item values. Can also be defaulted in your config with the key 'secret'.
+        --secret-file SECRET_FILE    A file containing the secret key to use to encrypt data bag item values. Can also be defaulted in your config with the key 'secret_file'.
+        --session-timeout SECONDS    The number of seconds to wait for each connection operation to be acknowledged while running bootstrap.
+    -A, --ssh-forward-agent          Enable SSH agent forwarding.
+    -G, --ssh-gateway GATEWAY        The SSH gateway.
+        --ssh-gateway-identity SSH_GATEWAY_IDENTITY
+                                     The SSH identity file used for gateway authentication.
+    -i IDENTITY_FILE,                The SSH identity file used for authentication.
+        --ssh-identity-file
+        --ssh-verify-host-key VALUE  Verify host key. Default is 'always'. (valid options: 'always', 'accept_new', 'accept_new_or_local_tunnel', or 'never')
+        --tags TAGS                  Comma separated list of tags to apply to the node.
+        --sudo                       Execute the bootstrap via sudo.
+        --use-sudo-password          Execute the bootstrap via sudo with password.
+    -V, --verbose                    More verbose output. Use twice for max verbosity.
+    -v, --version                    Show Chef Infra Client version.
+    -w AUTH-METHOD,                  The WinRM authentication method to use. (valid options: 'plaintext', 'kerberos', 'ssl', or 'negotiate')
+        --winrm-auth-method
+        --winrm-basic-auth-only      For WinRM basic authentication when using the 'ssl' auth method.
+        --winrm-no-verify-cert       Do not verify the SSL certificate of the target node for WinRM.
+        --winrm-ssl                  Use SSL in the WinRM connection.
+        --winrm-ssl-peer-fingerprint FINGERPRINT
+                                     SSL certificate fingerprint expected from the target.
+    -y, --yes                        Say yes to all prompts for confirmation.
+        --forward-agent              This flag is deprecated. Use -A/--ssh-forward-agent instead.
+    -h, --help                       Show this help message.
+        --[no-]host-key-verify       This flag is deprecated. Use --ssh-verify-host-key instead.
+        --prerelease                 This flag is deprecated. Use --channel instead.
+        --ssh-password PASSWORD      This flag is deprecated. Use -P/--connection-password instead.
+        --ssh-port PASSWORD          This flag is deprecated. Use -p/--connection-port instead.
+        --ssh-user USERNAME          This flag is deprecated. Use -U/--connection-user instead.
+        --ssl-peer-fingerprint FINGERPRINT
+                                     This flag is deprecated. Use --winrm-ssl-peer-fingerprint instead.
+        --winrm-authentication-protocol PROTOCOL
+                                     This flag is deprecated. Use -w/--winrm-auth-method instead.
+        --winrm-password PASSWORD    This flag is deprecated. Use -P/--connection-password instead.
+        --winrm-port PORT            This flag is deprecated. Use -p/--connection-port instead.
+        --winrm-session-timeout MINUTES
+                                     This flag is deprecated. Use --session-timeout instead.
+        --winrm-ssl-verify-mode MODE This flag is deprecated. Use --winrm-no-verify-cert instead.
+        --winrm-transport TRANSPORT  This flag is deprecated. Use --winrm-ssl instead.
+    -x, --winrm-user USERNAME        This flag is deprecated. Use -U/--connection-user instead.
+
+->knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo //bootstraping chef server,
+                                                                                here we are giving node VM & IP address 
+
+[root@workstation]# knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo
+Terminate batch job (Y/N)? N
+[root@workstation]# knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo^C
+[root@workstation]# knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node --sudo
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+-x/--winrm-user: This flag is deprecated. Use -U/--connection-user instead.
+Connecting to 54.146.165.165
+The authenticity of host '54.146.165.165 ()' can't be established.
+fingerprint is SHA256:mIfxvdzLYeemzsAly5yLQox5yuw8pVHWdPvSYMGI8Rg.
+
+Are you sure you want to continue connecting
+? (Y/N) Y
+Connecting to 54.146.165.165
+Creating new client for Chef-Node
+Creating new node for Chef-Node
+Bootstrapping 54.146.165.165
+ [54.146.165.165] -----> Installing Chef Omnibus (stable/15)
+downloading https://omnitruck.chef.io/chef/install.sh
+  to file /tmp/install.sh.32627/install.sh
+trying wget...
+ [54.146.165.165] el 7 x86_64
+Getting information for chef stable 15 for el...
+downloading https://omnitruck.chef.io/stable/chef/metadata?v=15&p=el&pv=7&m=x86_64
+  to file /tmp/install.sh.32632/metadata.txt
+ [54.146.165.165] trying wget...
+ [54.146.165.165] sha1  27c8caeb7fcbab3642d3a2c320d2f880a6cf8541
+sha256  9cb48fed74779b261a03c34178e375bbbf27860db3641ef5b392f7b1e439414e
+url     https://packages.chef.io/files/stable/chef/15.6.10/el/7/chef-15.6.10-1.el7.x86_64.rpm
+version 15.6.10
+ [54.146.165.165]
+ [54.146.165.165] downloaded metadata file looks valid...
+ [54.146.165.165] downloading https://packages.chef.io/files/stable/chef/15.6.10/el/7/chef-15.6.10-1.el7.x86_64.rpm
+  to file /tmp/install.sh.32632/chef-15.6.10-1.el7.x86_64.rpm
+ [54.146.165.165] trying wget...
+ [54.146.165.165] Comparing checksum with sha256sum...
+ [54.146.165.165] Installing chef 15
+installing with rpm...
+ [54.146.165.165] warning:
+ [54.146.165.165] /tmp/install.sh.32632/chef-15.6.10-1.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a: NOKEY
+ [54.146.165.165] Preparing...
+ [54.146.165.165] ########################################
+ [54.146.165.165]
+ [54.146.165.165] Updating / installing...
+chef-15.6.10-1.el7
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165]
+ [54.146.165.165] Thank you for installing Chef Infra Client! For help getting started visit https://learn.chef.io
+ [54.146.165.165] Starting the first Chef Infra Client Client run...
+ [54.146.165.165] +---------------------------------------------+
+? 2 product licenses accepted.
++---------------------------------------------+
+ [54.146.165.165] Starting Chef Infra Client, version 15.6.10
+ [54.146.165.165]
+ [54.146.165.165] resolving cookbooks for run list: []
+ [54.146.165.165]
+ [54.146.165.165] Synchronizing Cookbooks:
+ [54.146.165.165]
+ [54.146.165.165] Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-12-24T10:28:21+00:00] WARN: Node Chef-Node has an empty run list.
+ [54.146.165.165] Converging 0 resources
+ [54.146.165.165]
+ [54.146.165.165]
+ [54.146.165.165]
+ [54.146.165.165] Running handlers:
+ [54.146.165.165]
+ [54.146.165.165] Running handlers complete
+
+ [54.146.165.165] Chef Infra Client finished, 0/0 resources updated in 02 seconds
+ [54.146.165.165]
+
+->we can able to see a node got created with name Chef-Node under https://api.chef.io/organizations/djspys/nodes 
+->click on the node click on "Edit run List" on left side bcf_nginx will be avalible under "Avalible Recepies" drag it to "Current Run List"
+  then "save run List"

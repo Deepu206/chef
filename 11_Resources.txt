@@ -1,4 +1,5 @@
-We’ve used our first few resources already, but in this lesson, we’ll dig deeper into how resources work and what we can accomplish with them.
+We’ve used our first few resources already, but in this lesson, we’ll dig deeper into how resources work and what we can accomplish
+with them.
 
 Documentation:-
 Chef recipe documentation (https://docs.chef.io/recipes.html)
@@ -7,7 +8,9 @@ The package resource documentation (https://docs.chef.io/resource_package.html)
 The service resource documentation (https://docs.chef.io/resource_service.html)
 
 Default Resource Actions
-In our bcf_nginx default recipe we use the package resource without specifying the action, and this works because there is a default action. What is the default action of the package resource? If we look at the package’s “Actions” documentation we can see the options and that the default is :install. There are other options, let’s take a look at those now:
+In our bcf_nginx default recipe we use the package resource without specifying the action, and this works because there is a default action.
+What is the default action of the package resource? If we look at the package’s “Actions” documentation we can see the options and that the
+default is :install. There are other options, let’s take a look at those now:
 
 :install - Default, installs the package.
 :nothing - Does nothing until the resource is notified.
@@ -16,12 +19,18 @@ In our bcf_nginx default recipe we use the package resource without specifying t
 :remove - Removes the package.
 :upgrade - Install and/or ensure that the package is the latest version.
 
-A few things to note here are that the :enable and :start actions that we used with the service resource aren’t here. Each resource defines its own actions. Notice that they are all present tense verbs (except for :nothing, it’s a unique one). Lastly, the :nothing action is shared by all resource types to allow us to specify what to do when a resource is “notified”.
+A few things to note here are that the :enable and :start actions that we used with the service resource aren’t here. Each resource defines
+its own actions. Notice that they are all present tense verbs (except for :nothing, it’s a unique one). Lastly, the :nothing action is shared 
+by all resource types to allow us to specify what to do when a resource is “notified”.
 
 Common Resource Characteristics:-
-All resources share some common characteristics and those can be found on a special page in the Chef documentation. We’ve already talked about the :nothing action that is shared, but there are other aspects that we’ll find that all resources have in common. Let’s discuss and demonstrate a few of these common characteristics now.
+All resources share some common characteristics and those can be found on a special page in the Chef documentation. We’ve already talked
+ about the :nothing action that is shared, but there are other aspects that we’ll find that all resources have in common. Let’s discuss 
+ and demonstrate a few of these common characteristics now.
 
-In addition to the :nothing action, every resource has access to the “guards” not_if and only_if. These guards allow us to specify whether or not the resource should execute based on the result of a conditional action or command. Let’s use not_if to only create an index.html file is one doesn’t exist using the file resource.
+In addition to the :nothing action, every resource has access to the “guards” not_if and only_if. These guards allow us to specify whether
+ or not the resource should execute based on the result of a conditional action or command. Let’s use not_if to only create an index.html 
+ file is one doesn’t exist using the file resource.
 
 ~/chef-repo/cookbooks/bcf_nginx/recipes/default.rb
 
@@ -62,3 +71,84 @@ This file already exists (because it was created by the nginx package), so nothi
     +<h1>Hello, world!</h1>
     - restore selinux security context
 [2018-05-14T18:46:01+00:00] INFO: Chef Run complete in 5.796235169 seconds
+
+
+**************************************************************************************************************************************
+[root@workstation chef-repo]# ls
+cookbooks  nodes
+[root@workstation chef-repo]# cd cookbooks
+[root@workstation cookbooks]#
+[root@workstation cookbooks]# ls
+bcf_nginx  bcf_nginx.rb
+[root@workstation cookbooks]# cat bcf_nginx
+cat: bcf_nginx: Is a directory
+[root@workstation cookbooks]# cd bcf_nginx
+[root@workstation bcf_nginx]# ls
+CHANGELOG.md  chefignore  kitchen.yml  LICENSE  metadata.rb  Policyfile.rb  README.md  recipes  spec  test
+[root@workstation bcf_nginx]# cd recipes
+[root@workstation recipes]# ls
+default.rb
+[root@workstation recipes]# cat default.rb
+package "nginx"
+  service "nginx" do
+  action [:enable, :start]
+end
+
+file "/usr/share/nginx/html/index.html" do
+  content "<h1>Hello, world!</h1>"
+  action :create
+  not_if { ::File.exists?("/usr/share/nginx/html/index.html") }
+end
+
+[root@workstation chef-repo]# clear
+[root@workstation chef-repo]# chef-client --local-mode cookbooks/bcf_nginx/recipes/default.rb
+[2019-12-25T20:15:18+00:00] WARN: No config file found or specified on command line. Using command line options instead.
+Starting Chef Infra Client, version 15.5.17
+resolving cookbooks for run list: []
+Synchronizing Cookbooks:
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-12-25T20:15:22+00:00] WARN: Node workstation.example.com has an empty run list.
+Converging 3 resources
+Recipe: @recipe_files::/chef-repo/cookbooks/bcf_nginx/recipes/default.rb
+  * yum_package[nginx] action install
+    - install version 1:1.16.1-1.el7.x86_64 of package nginx
+  * service[nginx] action enable
+    - enable service service[nginx]
+  * service[nginx] action start
+    - start service service[nginx]
+  * file[/usr/share/nginx/html/index.html] action create (skipped due to not_if)
+
+Running handlers:
+Running handlers complete
+Chef Infra Client finished, 3/4 resources updated in 55 seconds
+[root@workstation chef-repo]# ls
+cookbooks  nodes
+[root@workstation chef-repo]# rm /usr/share/nginx/html/index.html
+rm: remove symbolic link ‘/usr/share/nginx/html/index.html’? yes
+[root@workstation chef-repo]# chef-client --local-mode cookbooks/bcf_nginx/recipes/default.rb
+[2019-12-25T20:17:10+00:00] WARN: No config file found or specified on command line. Using command line options instead.
+Starting Chef Infra Client, version 15.5.17
+resolving cookbooks for run list: []
+Synchronizing Cookbooks:
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-12-25T20:17:13+00:00] WARN: Node workstation.example.com has an empty run list.
+Converging 3 resources
+Recipe: @recipe_files::/chef-repo/cookbooks/bcf_nginx/recipes/default.rb
+  * yum_package[nginx] action install (up to date)
+  * service[nginx] action enable (up to date)
+  * service[nginx] action start (up to date)
+  * file[/usr/share/nginx/html/index.html] action create
+    - create new file /usr/share/nginx/html/index.html
+    - update content in file /usr/share/nginx/html/index.html from none to 17d291
+    --- /usr/share/nginx/html/index.html        2019-12-25 20:17:15.280095416 +0000
+    +++ /usr/share/nginx/html/.chef-index20191225-27416-hvs8kt.html     2019-12-25 20:17:15.279095445 +0000
+    @@ -1 +1,2 @@
+    +<h1>Hello, world!</h1>
+    - restore selinux security context
+
+Running handlers:
+Running handlers complete
+Chef Infra Client finished, 1/4 resources updated in 04 seconds
+

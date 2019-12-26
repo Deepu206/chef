@@ -1,4 +1,5 @@
-Cookbooks contain everything necessary to support configuration for a given “scenario”, but recipes are where this configuration happens. In this lesson, we’ll create our first recipe that will install and configure NGINX.
+Cookbooks contain everything necessary to support configuration for a given “scenario”, but recipes are where this configuration happens. 
+In this lesson, we’ll create our first recipe that will install and configure NGINX.
 
 Documentation:-
 Chef cookbook documentation (https://docs.chef.io/cookbooks.html)
@@ -18,12 +19,16 @@ Every cookbook will come with a default recipe. We can have more than one recipe
 #
 # Copyright:: 2018, The Authors, All Rights Reserved.
 
-All Chef code is written in Ruby. We don’t need to be ruby experts to use Chef thankfully, but it does help to understand the syntax, so as we go through this I’ll call out what’s going on in the ruby itself to hopefully provide more clarity.
+All Chef code is written in Ruby. We don’t need to be ruby experts to use Chef thankfully, but it does help to understand the syntax, 
+so as we go through this I’ll call out what’s going on in the ruby itself to hopefully provide more clarity.
 
 For these existing lines, we’re seeing ruby comments and none of what we see here is executed.
 
 Installing NGINX:-
-Our cookbook is going to install and configure the NGINX package, and one of the benefits of Chef is that we get to “declare” what we want to have the final configuration be and let Chef attempt to make that happen. To achieve this declarative approach, we won’t be writing the individual steps necessary to accomplish things, we’ll instead be leveraging Chef resources. We’ll dig deep into resources in a later lesson, but let’s use the first two right now: package and service:
+Our cookbook is going to install and configure the NGINX package, and one of the benefits of Chef is that we get to “declare” what
+we want to have the final configuration be and let Chef attempt to make that happen. To achieve this declarative approach, we won’t 
+be writing the individual steps necessary to accomplish things, we’ll instead be leveraging Chef resources.
+We’ll dig deep into resources in a later lesson, but let’s use the first two right now: package and service:
 
 ~/chef-repo/cookbooks/bcf_nginx/recipes/default.rb
 
@@ -33,7 +38,9 @@ service "nginx" do
   action [:enable, :start]
 end
 
-The package resource is in charge of installing the package with the name that we specify. Based on the system that is running the recipe, a different package manager will be used. The package abstracting away the implementation, we don’t have to necessarily worry about whether it is using yum on Red Hat based systems or apt-get on debian based systems.
+The package resource is in charge of installing the package with the name that we specify. Based on the system that is running the recipe,
+a different package manager will be used. The package abstracting away the implementation, we don’t have to necessarily worry about whether
+it is using yum on Red Hat based systems or apt-get on debian based systems.
 
 Similarly, the service package will allow us to run the service without specifying directly if you should use systemd or something else.
 
@@ -123,3 +130,1031 @@ Chef Client finished, 1/3 resources updated in 06 seconds
 
 
 Since the service was not enabled, an action was taken to enable it. This change was the only modification Chef needed to make to get the system back to the desired state.
+
+
+******************************
+1.navigate to https://api.chef.io/ url signup.
+2.create organization by giving its name  & short name.
+3.click on the organization in the left panel we can able to see starterkit click on it Download starter kit 
+  Administration -> select organization ->starterkit ->Download starterkit ->proceed->chef-starter will get downloaded.
+
+->cd chef-starter //cd int o that chef-starter
+
+PS C:\Divya\Trainings\7_Chef> cd chef-starter
+PS C:\Divya\Trainings\7_Chef\chef-starter> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:38                chef-repo
+
+
+->cd chef-repo //cd into chef-repo
+
+PS C:\Divya\Trainings\7_Chef\chef-starter> cd chef-repo
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     09:08                .chef
+d-----       24-12-2019     09:08                cookbooks
+d-----       24-12-2019     09:08                roles
+-a----       24-12-2019     09:08            495 .gitignore
+-a----       24-12-2019     09:08           2341 README.md
+
+->cd .chef //cd into .chef we can able to see pem file &rb file as shown below.
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> cd .chef
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       24-12-2019     09:08           1678 djspys.pem
+-a----       24-12-2019     09:08            412 knife.rb
+
+-> cd cookbooks  //cd to cookbooks
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> cd ..
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> cd cookbooks
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     09:08                starter
+-a----       24-12-2019     09:08            588 chefignore
+
+->chef generate cookbook bcf_nginx //create a new cookbook with name bcf_nginx
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef generate cookbook bcf_nginx
++---------------------------------------------+
+            Chef License Acceptance
+
+Before you can continue, 1 product license
+must be accepted. View the license at
+https://www.chef.io/end-user-license-agreement/
+
+License that need accepting:
+  * Chef Development Kit
+
+Do you accept the 1 product license (yes/no)?
+
+ > yes
+
+Persisting 1 product license...
+? 1 product license persisted.
+
++---------------------------------------------+
+Generating cookbook bcf_nginx
+- Ensuring correct cookbook content
+- Committing cookbook files to git
+
+Your cookbook is ready. Type `cd bcf_nginx` to enter it.
+
+There are several commands you can run to get started locally developing and testing your cookbook.
+Type `delivery local --help` to see a full list of local testing commands.
+
+Why not start by writing an InSpec test? Tests for the default recipe are stored at:
+
+test/integration/default/default_test.rb
+
+If you'd prefer to dive right in, the default recipe can be found at:
+
+recipes/default.rb
+
+->now we can able to see bcf_nginx got created under cookbook
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                bcf_nginx
+d-----       24-12-2019     09:08                starter
+-a----       24-12-2019     09:08            588 chefignore
+
+
+->cd bcf_nginx //cd into cookbook bcf_nginx
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> cd bcf_nginx
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                .delivery
+d-----       24-12-2019     14:51                recipes
+d-----       24-12-2019     14:51                spec
+d-----       24-12-2019     14:51                test
+-a----       24-12-2019     14:51            196 .gitignore
+-a----       24-12-2019     14:51            167 CHANGELOG.md
+-a----       24-12-2019     14:51           1176 chefignore
+-a----       24-12-2019     14:51            773 kitchen.yml
+-a----       24-12-2019     14:51             73 LICENSE
+-a----       24-12-2019     14:51            757 metadata.rb
+-a----       24-12-2019     14:51            532 Policyfile.rb
+-a----       24-12-2019     14:51             61 README.md
+
+->cd recipes //cd into recipes we can able to see default.rb it has some default code replace that code with 
+
+package "nginx"
+
+	service "nginx" do
+	  action [:enable, :start]
+end
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx\recipes> cat default.rb
+package "nginx"
+
+service "nginx" do
+  action [:enable, :start]
+end
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx\recipes> cd ..
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                .delivery
+d-----       24-12-2019     14:51                recipes
+d-----       24-12-2019     14:51                spec
+d-----       24-12-2019     14:51                test
+-a----       24-12-2019     14:51            196 .gitignore
+-a----       24-12-2019     14:51            167 CHANGELOG.md
+-a----       24-12-2019     14:51           1176 chefignore
+-a----       24-12-2019     14:51            773 kitchen.yml
+-a----       24-12-2019     14:51             73 LICENSE
+-a----       24-12-2019     14:51            757 metadata.rb
+-a----       24-12-2019     14:51            532 Policyfile.rb
+-a----       24-12-2019     14:51             61 README.md
+
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks\bcf_nginx> cd ..
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                bcf_nginx
+d-----       24-12-2019     09:08                starter
+-a----       24-12-2019     09:08            588 chefignore
+
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> cd ..
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                .chef
+d-----       24-12-2019     14:51                cookbooks
+d-----       24-12-2019     09:08                roles
+-a----       24-12-2019     09:08            495 .gitignore
+-a----       24-12-2019     09:08           2341 README.md
+
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> cd .chef
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       24-12-2019     14:51             36 chef_guid
+-a----       24-12-2019     09:08           1678 djspys.pem
+-a----       24-12-2019     09:08            412 knife.rb
+
+->knife cookbook upload bcf_nginx //upload bcf_nginx into chef server,once is uploaded we can able to see this folder under 
+                                    https://api.chef.io/organizations/djspys/cookbooks  
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife cookbook upload bcf_nginx
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+Uploading bcf_nginx    [0.1.0]
+Uploaded 1 cookbook.
+
+->knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo //bootstraping chef server,
+                                                                                here we are giving node VM & IP address 
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo
+Terminate batch job (Y/N)? N
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node-1 --sudo^C
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> ^C
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife bootstrap 54.146.165.165 -x ec2-user -i chef.pem -N Chef-Node --sudo
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+-x/--winrm-user: This flag is deprecated. Use -U/--connection-user instead.
+Connecting to 54.146.165.165
+The authenticity of host '54.146.165.165 ()' can't be established.
+fingerprint is SHA256:mIfxvdzLYeemzsAly5yLQox5yuw8pVHWdPvSYMGI8Rg.
+
+Are you sure you want to continue connecting
+? (Y/N) Y
+Connecting to 54.146.165.165
+Creating new client for Chef-Node
+Creating new node for Chef-Node
+Bootstrapping 54.146.165.165
+ [54.146.165.165] -----> Installing Chef Omnibus (stable/15)
+downloading https://omnitruck.chef.io/chef/install.sh
+  to file /tmp/install.sh.32627/install.sh
+trying wget...
+ [54.146.165.165] el 7 x86_64
+Getting information for chef stable 15 for el...
+downloading https://omnitruck.chef.io/stable/chef/metadata?v=15&p=el&pv=7&m=x86_64
+  to file /tmp/install.sh.32632/metadata.txt
+ [54.146.165.165] trying wget...
+ [54.146.165.165] sha1  27c8caeb7fcbab3642d3a2c320d2f880a6cf8541
+sha256  9cb48fed74779b261a03c34178e375bbbf27860db3641ef5b392f7b1e439414e
+url     https://packages.chef.io/files/stable/chef/15.6.10/el/7/chef-15.6.10-1.el7.x86_64.rpm
+version 15.6.10
+ [54.146.165.165]
+ [54.146.165.165] downloaded metadata file looks valid...
+ [54.146.165.165] downloading https://packages.chef.io/files/stable/chef/15.6.10/el/7/chef-15.6.10-1.el7.x86_64.rpm
+  to file /tmp/install.sh.32632/chef-15.6.10-1.el7.x86_64.rpm
+ [54.146.165.165] trying wget...
+ [54.146.165.165] Comparing checksum with sha256sum...
+ [54.146.165.165] Installing chef 15
+installing with rpm...
+ [54.146.165.165] warning:
+ [54.146.165.165] /tmp/install.sh.32632/chef-15.6.10-1.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a: NOKEY
+ [54.146.165.165] Preparing...
+ [54.146.165.165] ########################################
+ [54.146.165.165]
+ [54.146.165.165] Updating / installing...
+chef-15.6.10-1.el7
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165] #
+ [54.146.165.165]
+ [54.146.165.165] Thank you for installing Chef Infra Client! For help getting started visit https://learn.chef.io
+ [54.146.165.165] Starting the first Chef Infra Client Client run...
+ [54.146.165.165] +---------------------------------------------+
+? 2 product licenses accepted.
++---------------------------------------------+
+ [54.146.165.165] Starting Chef Infra Client, version 15.6.10
+ [54.146.165.165]
+ [54.146.165.165] resolving cookbooks for run list: []
+ [54.146.165.165]
+ [54.146.165.165] Synchronizing Cookbooks:
+ [54.146.165.165]
+ [54.146.165.165] Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-12-24T10:28:21+00:00] WARN: Node Chef-Node has an empty run list.
+ [54.146.165.165] Converging 0 resources
+ [54.146.165.165]
+ [54.146.165.165]
+ [54.146.165.165]
+ [54.146.165.165] Running handlers:
+ [54.146.165.165]
+ [54.146.165.165] Running handlers complete
+
+ [54.146.165.165] Chef Infra Client finished, 0/0 resources updated in 02 seconds
+ [54.146.165.165]
+
+->we can able to see a node got created with name Chef-Node under https://api.chef.io/organizations/djspys/nodes 
+->click on the node click on "Edit run List" on left side bcf_nginx will be avalible under "Avalible Recepies" drag it to "Current Run List"
+  then "save run List"
+
+GO TO AWS CONSOLE:
+
+
+$ ssh -i "chef.pem" ec2-user@ec2-54-146-165-165.compute-1.amazonaws.com
+Last login: Tue Dec 24 10:30:55 2019 from 103.130.108.151
+
+       __|  __|_  )
+       _|  (     /   Amazon Linux 2 AMI
+      ___|\___|___|
+
+https://aws.amazon.com/amazon-linux-2/
+8 package(s) needed for security, out of 17 available
+Run "sudo yum update" to apply all updates.
+[ec2-user@ip-172-31-41-140 ~]$ run chef-client
+-bash: run: command not found
+
+->sudo yum update //updating
+
+[ec2-user@ip-172-31-41-140 ~]$ sudo yum update
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+amzn2-core                                                                                                                                           | 2.4 kB  00:00:00
+Resolving Dependencies
+--> Running transaction check
+---> Package amazon-ssm-agent.x86_64 0:2.3.662.0-1.amzn2 will be updated
+---> Package amazon-ssm-agent.x86_64 0:2.3.714.0-1.amzn2 will be an update
+---> Package ca-certificates.noarch 0:2018.2.22-70.0.amzn2 will be updated
+---> Package ca-certificates.noarch 0:2018.2.22-70.0.amzn2.0.1 will be an update
+---> Package file.x86_64 0:5.11-33.amzn2.0.2 will be updated
+---> Package file.x86_64 0:5.11-35.amzn2.0.2 will be an update
+---> Package file-libs.x86_64 0:5.11-33.amzn2.0.2 will be updated
+---> Package file-libs.x86_64 0:5.11-35.amzn2.0.2 will be an update
+---> Package kernel.x86_64 0:4.14.154-128.181.amzn2 will be installed
+---> Package krb5-libs.x86_64 0:1.15.1-20.amzn2.0.1 will be updated
+---> Package krb5-libs.x86_64 0:1.15.1-37.amzn2.2.1 will be an update
+---> Package libidn2.x86_64 0:2.0.4-1.amzn2.0.2 will be updated
+---> Package libidn2.x86_64 0:2.3.0-1.amzn2 will be an update
+---> Package python.x86_64 0:2.7.16-3.amzn2.0.1 will be updated
+---> Package python.x86_64 0:2.7.16-4.amzn2 will be an update
+---> Package python-devel.x86_64 0:2.7.16-3.amzn2.0.1 will be updated
+---> Package python-devel.x86_64 0:2.7.16-4.amzn2 will be an update
+---> Package python-libs.x86_64 0:2.7.16-3.amzn2.0.1 will be updated
+---> Package python-libs.x86_64 0:2.7.16-4.amzn2 will be an update
+---> Package python2-rpm.x86_64 0:4.11.3-40.amzn2.0.3 will be obsoleting
+---> Package rpm.x86_64 0:4.11.3-25.amzn2.0.3 will be updated
+---> Package rpm.x86_64 0:4.11.3-40.amzn2.0.3 will be an update
+---> Package rpm-build-libs.x86_64 0:4.11.3-25.amzn2.0.3 will be updated
+---> Package rpm-build-libs.x86_64 0:4.11.3-40.amzn2.0.3 will be an update
+---> Package rpm-libs.x86_64 0:4.11.3-25.amzn2.0.3 will be updated
+---> Package rpm-libs.x86_64 0:4.11.3-40.amzn2.0.3 will be an update
+---> Package rpm-plugin-systemd-inhibit.x86_64 0:4.11.3-25.amzn2.0.3 will be updated
+---> Package rpm-plugin-systemd-inhibit.x86_64 0:4.11.3-40.amzn2.0.3 will be an update
+---> Package rpm-python.x86_64 0:4.11.3-25.amzn2.0.3 will be obsoleted
+---> Package rsyslog.x86_64 0:8.24.0-16.amzn2.6.1 will be updated
+---> Package rsyslog.x86_64 0:8.24.0-41.amzn2.2.1 will be an update
+---> Package yum.noarch 0:3.4.3-158.amzn2.0.2 will be updated
+---> Package yum.noarch 0:3.4.3-158.amzn2.0.3 will be an update
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+============================================================================================================================================================================
+ Package                                           Arch                          Version                                            Repository                         Size
+============================================================================================================================================================================
+Installing:
+ kernel                                            x86_64                        4.14.154-128.181.amzn2                             amzn2-core                         20 M
+ python2-rpm                                       x86_64                        4.11.3-40.amzn2.0.3                                amzn2-core                         84 k
+     replacing  rpm-python.x86_64 4.11.3-25.amzn2.0.3
+Updating:
+ amazon-ssm-agent                                  x86_64                        2.3.714.0-1.amzn2                                  amzn2-core                         15 M
+ ca-certificates                                   noarch                        2018.2.22-70.0.amzn2.0.1                           amzn2-core                        392 k
+ file                                              x86_64                        5.11-35.amzn2.0.2                                  amzn2-core                         57 k
+ file-libs                                         x86_64                        5.11-35.amzn2.0.2                                  amzn2-core                        339 k
+ krb5-libs                                         x86_64                        1.15.1-37.amzn2.2.1                                amzn2-core                        759 k
+ libidn2                                           x86_64                        2.3.0-1.amzn2                                      amzn2-core                        140 k
+ python                                            x86_64                        2.7.16-4.amzn2                                     amzn2-core                         92 k
+ python-devel                                      x86_64                        2.7.16-4.amzn2                                     amzn2-core                        403 k
+ python-libs                                       x86_64                        2.7.16-4.amzn2                                     amzn2-core                        7.4 M
+ rpm                                               x86_64                        4.11.3-40.amzn2.0.3                                amzn2-core                        1.2 M
+ rpm-build-libs                                    x86_64                        4.11.3-40.amzn2.0.3                                amzn2-core                        106 k
+ rpm-libs                                          x86_64                        4.11.3-40.amzn2.0.3                                amzn2-core                        275 k
+ rpm-plugin-systemd-inhibit                        x86_64                        4.11.3-40.amzn2.0.3                                amzn2-core                         47 k
+ rsyslog                                           x86_64                        8.24.0-41.amzn2.2.1                                amzn2-core                        613 k
+ yum                                               noarch                        3.4.3-158.amzn2.0.3                                amzn2-core                        1.2 M
+
+Transaction Summary
+============================================================================================================================================================================
+Install   2 Packages
+Upgrade  15 Packages
+
+Total download size: 49 M
+Is this ok [y/d/N]: y
+Downloading packages:
+Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+(1/17): ca-certificates-2018.2.22-70.0.amzn2.0.1.noarch.rpm                                                                                          | 392 kB  00:00:00
+(2/17): file-5.11-35.amzn2.0.2.x86_64.rpm                                                                                                            |  57 kB  00:00:00
+(3/17): file-libs-5.11-35.amzn2.0.2.x86_64.rpm                                                                                                       | 339 kB  00:00:00
+(4/17): amazon-ssm-agent-2.3.714.0-1.amzn2.x86_64.rpm                                                                                                |  15 MB  00:00:00
+(5/17): krb5-libs-1.15.1-37.amzn2.2.1.x86_64.rpm                                                                                                     | 759 kB  00:00:00
+(6/17): kernel-4.14.154-128.181.amzn2.x86_64.rpm                                                                                                     |  20 MB  00:00:00
+(7/17): python-2.7.16-4.amzn2.x86_64.rpm                                                                                                             |  92 kB  00:00:00
+(8/17): libidn2-2.3.0-1.amzn2.x86_64.rpm                                                                                                             | 140 kB  00:00:00
+(9/17): python-devel-2.7.16-4.amzn2.x86_64.rpm                                                                                                       | 403 kB  00:00:00
+(10/17): python2-rpm-4.11.3-40.amzn2.0.3.x86_64.rpm                                                                                                  |  84 kB  00:00:00
+(11/17): rpm-4.11.3-40.amzn2.0.3.x86_64.rpm                                                                                                          | 1.2 MB  00:00:00
+(12/17): rpm-build-libs-4.11.3-40.amzn2.0.3.x86_64.rpm                                                                                               | 106 kB  00:00:00
+(13/17): rpm-libs-4.11.3-40.amzn2.0.3.x86_64.rpm                                                                                                     | 275 kB  00:00:00
+(14/17): rpm-plugin-systemd-inhibit-4.11.3-40.amzn2.0.3.x86_64.rpm                                                                                   |  47 kB  00:00:00
+(15/17): python-libs-2.7.16-4.amzn2.x86_64.rpm                                                                                                       | 7.4 MB  00:00:00
+(16/17): rsyslog-8.24.0-41.amzn2.2.1.x86_64.rpm                                                                                                      | 613 kB  00:00:00
+(17/17): yum-3.4.3-158.amzn2.0.3.noarch.rpm                                                                                                          | 1.2 MB  00:00:00
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Total                                                                                                                                        67 MB/s |  49 MB  00:00:00
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+Warning: RPMDB altered outside of yum.
+  Updating   : rpm-4.11.3-40.amzn2.0.3.x86_64                                                                                                                          1/33
+  Updating   : rpm-libs-4.11.3-40.amzn2.0.3.x86_64                                                                                                                     2/33
+  Updating   : python-libs-2.7.16-4.amzn2.x86_64                                                                                                                       3/33
+  Updating   : python-2.7.16-4.amzn2.x86_64                                                                                                                            4/33
+  Updating   : file-libs-5.11-35.amzn2.0.2.x86_64                                                                                                                      5/33
+  Updating   : rpm-build-libs-4.11.3-40.amzn2.0.3.x86_64                                                                                                               6/33
+  Installing : python2-rpm-4.11.3-40.amzn2.0.3.x86_64                                                                                                                  7/33
+  Updating   : yum-3.4.3-158.amzn2.0.3.noarch                                                                                                                          8/33
+  Updating   : file-5.11-35.amzn2.0.2.x86_64                                                                                                                           9/33
+  Updating   : python-devel-2.7.16-4.amzn2.x86_64                                                                                                                     10/33
+  Updating   : rpm-plugin-systemd-inhibit-4.11.3-40.amzn2.0.3.x86_64                                                                                                  11/33
+  Updating   : libidn2-2.3.0-1.amzn2.x86_64                                                                                                                           12/33
+  Updating   : rsyslog-8.24.0-41.amzn2.2.1.x86_64                                                                                                                     13/33
+  Installing : kernel-4.14.154-128.181.amzn2.x86_64                                                                                                                   14/33
+  Updating   : ca-certificates-2018.2.22-70.0.amzn2.0.1.noarch                                                                                                        15/33
+  Updating   : krb5-libs-1.15.1-37.amzn2.2.1.x86_64                                                                                                                   16/33
+  Updating   : amazon-ssm-agent-2.3.714.0-1.amzn2.x86_64                                                                                                              17/33
+  Cleanup    : python-devel-2.7.16-3.amzn2.0.1.x86_64                                                                                                                 18/33
+  Cleanup    : yum-3.4.3-158.amzn2.0.2.noarch                                                                                                                         19/33
+  Cleanup    : ca-certificates-2018.2.22-70.0.amzn2.noarch                                                                                                            20/33
+  Erasing    : rpm-python-4.11.3-25.amzn2.0.3.x86_64                                                                                                                  21/33
+  Cleanup    : rpm-build-libs-4.11.3-25.amzn2.0.3.x86_64                                                                                                              22/33
+  Cleanup    : python-2.7.16-3.amzn2.0.1.x86_64                                                                                                                       23/33
+  Cleanup    : rpm-plugin-systemd-inhibit-4.11.3-25.amzn2.0.3.x86_64                                                                                                  24/33
+  Cleanup    : rpm-libs-4.11.3-25.amzn2.0.3.x86_64                                                                                                                    25/33
+  Cleanup    : rpm-4.11.3-25.amzn2.0.3.x86_64                                                                                                                         26/33
+  Cleanup    : file-5.11-33.amzn2.0.2.x86_64                                                                                                                          27/33
+  Cleanup    : file-libs-5.11-33.amzn2.0.2.x86_64                                                                                                                     28/33
+  Cleanup    : python-libs-2.7.16-3.amzn2.0.1.x86_64                                                                                                                  29/33
+  Cleanup    : libidn2-2.0.4-1.amzn2.0.2.x86_64                                                                                                                       30/33
+  Cleanup    : rsyslog-8.24.0-16.amzn2.6.1.x86_64                                                                                                                     31/33
+  Cleanup    : krb5-libs-1.15.1-20.amzn2.0.1.x86_64                                                                                                                   32/33
+  Cleanup    : amazon-ssm-agent-2.3.662.0-1.amzn2.x86_64                                                                                                              33/33
+  Verifying  : amazon-ssm-agent-2.3.714.0-1.amzn2.x86_64                                                                                                               1/33
+  Verifying  : file-libs-5.11-35.amzn2.0.2.x86_64                                                                                                                      2/33
+  Verifying  : krb5-libs-1.15.1-37.amzn2.2.1.x86_64                                                                                                                    3/33
+  Verifying  : python-libs-2.7.16-4.amzn2.x86_64                                                                                                                       4/33
+  Verifying  : python-2.7.16-4.amzn2.x86_64                                                                                                                            5/33
+  Verifying  : yum-3.4.3-158.amzn2.0.3.noarch                                                                                                                          6/33
+  Verifying  : rpm-libs-4.11.3-40.amzn2.0.3.x86_64                                                                                                                     7/33
+  Verifying  : ca-certificates-2018.2.22-70.0.amzn2.0.1.noarch                                                                                                         8/33
+  Verifying  : file-5.11-35.amzn2.0.2.x86_64                                                                                                                           9/33
+  Verifying  : rpm-build-libs-4.11.3-40.amzn2.0.3.x86_64                                                                                                              10/33
+  Verifying  : kernel-4.14.154-128.181.amzn2.x86_64                                                                                                                   11/33
+  Verifying  : rpm-4.11.3-40.amzn2.0.3.x86_64                                                                                                                         12/33
+  Verifying  : rsyslog-8.24.0-41.amzn2.2.1.x86_64                                                                                                                     13/33
+  Verifying  : libidn2-2.3.0-1.amzn2.x86_64                                                                                                                           14/33
+  Verifying  : rpm-plugin-systemd-inhibit-4.11.3-40.amzn2.0.3.x86_64                                                                                                  15/33
+  Verifying  : python-devel-2.7.16-4.amzn2.x86_64                                                                                                                     16/33
+  Verifying  : python2-rpm-4.11.3-40.amzn2.0.3.x86_64                                                                                                                 17/33
+  Verifying  : python-devel-2.7.16-3.amzn2.0.1.x86_64                                                                                                                 18/33
+  Verifying  : file-5.11-33.amzn2.0.2.x86_64                                                                                                                          19/33
+  Verifying  : python-2.7.16-3.amzn2.0.1.x86_64                                                                                                                       20/33
+  Verifying  : ca-certificates-2018.2.22-70.0.amzn2.noarch                                                                                                            21/33
+  Verifying  : python-libs-2.7.16-3.amzn2.0.1.x86_64                                                                                                                  22/33
+  Verifying  : rpm-4.11.3-25.amzn2.0.3.x86_64                                                                                                                         23/33
+  Verifying  : libidn2-2.0.4-1.amzn2.0.2.x86_64                                                                                                                       24/33
+  Verifying  : rpm-libs-4.11.3-25.amzn2.0.3.x86_64                                                                                                                    25/33
+  Verifying  : amazon-ssm-agent-2.3.662.0-1.amzn2.x86_64                                                                                                              26/33
+  Verifying  : rpm-build-libs-4.11.3-25.amzn2.0.3.x86_64                                                                                                              27/33
+  Verifying  : rpm-python-4.11.3-25.amzn2.0.3.x86_64                                                                                                                  28/33
+  Verifying  : rpm-plugin-systemd-inhibit-4.11.3-25.amzn2.0.3.x86_64                                                                                                  29/33
+  Verifying  : yum-3.4.3-158.amzn2.0.2.noarch                                                                                                                         30/33
+  Verifying  : rsyslog-8.24.0-16.amzn2.6.1.x86_64                                                                                                                     31/33
+  Verifying  : file-libs-5.11-33.amzn2.0.2.x86_64                                                                                                                     32/33
+  Verifying  : krb5-libs-1.15.1-20.amzn2.0.1.x86_64                                                                                                                   33/33
+
+Installed:
+  kernel.x86_64 0:4.14.154-128.181.amzn2                                              python2-rpm.x86_64 0:4.11.3-40.amzn2.0.3
+
+Updated:
+  amazon-ssm-agent.x86_64 0:2.3.714.0-1.amzn2                      ca-certificates.noarch 0:2018.2.22-70.0.amzn2.0.1          file.x86_64 0:5.11-35.amzn2.0.2
+  file-libs.x86_64 0:5.11-35.amzn2.0.2                             krb5-libs.x86_64 0:1.15.1-37.amzn2.2.1                     libidn2.x86_64 0:2.3.0-1.amzn2
+  python.x86_64 0:2.7.16-4.amzn2                                   python-devel.x86_64 0:2.7.16-4.amzn2                       python-libs.x86_64 0:2.7.16-4.amzn2
+  rpm.x86_64 0:4.11.3-40.amzn2.0.3                                 rpm-build-libs.x86_64 0:4.11.3-40.amzn2.0.3                rpm-libs.x86_64 0:4.11.3-40.amzn2.0.3
+  rpm-plugin-systemd-inhibit.x86_64 0:4.11.3-40.amzn2.0.3          rsyslog.x86_64 0:8.24.0-41.amzn2.2.1                       yum.noarch 0:3.4.3-158.amzn2.0.3
+
+Replaced:
+  rpm-python.x86_64 0:4.11.3-25.amzn2.0.3
+
+Complete!
+
+->chef-client //gives the chef client installed in Ec2 instance Chef-Node
+ 
+[ec2-user@ip-172-31-41-140 ~]$ chef-client
+Starting Chef Infra Client, version 15.6.10
+[2019-12-24T11:01:05+00:00] WARN: Failed to read the private key /etc/chef/client.pem: #<Errno::EACCES: Permission denied @ rb_sysopen - /etc/chef/client.pem>
+
+Running handlers:
+[2019-12-24T11:01:05+00:00] ERROR: Running exception handlers
+Running handlers complete
+[2019-12-24T11:01:05+00:00] ERROR: Exception handlers complete
+Chef Infra Client failed. 0 resources updated in 01 seconds
+[2019-12-24T11:01:05+00:00] WARN: Failed to read the private key /etc/chef/client.pem: #<Errno::EACCES: Permission denied @ rb_sysopen - /etc/chef/client.pem>
+[2019-12-24T11:01:05+00:00] WARN: Error while reporting run start to Data Collector. URL: https://api.chef.io/organizations/djspys/data-collector Exception: No HTTP Code -- I cannot read /etc/chef/client.pem, which you told me to use to sign requests!
+[2019-12-24T11:01:05+00:00] WARN: Failed to read the private key /etc/chef/client.pem: #<Errno::EACCES: Permission denied @ rb_sysopen - /etc/chef/client.pem>
+[2019-12-24T11:01:05+00:00] WARN: Error while reporting run start to Data Collector. URL: https://api.chef.io/organizations/djspys/data-collector Exception: No HTTP Code -- I cannot read /etc/chef/client.pem, which you told me to use to sign requests!
+[2019-12-24T11:01:05+00:00] FATAL: Stacktrace dumped to /home/ec2-user/.chef/cache/chef-stacktrace.out
+[2019-12-24T11:01:05+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-24T11:01:05+00:00] FATAL: Chef::Exceptions::PrivateKeyMissing: I cannot read /etc/chef/client.pem, which you told me to use to sign requests!
+[ec2-user@ip-172-31-41-140 ~]$ sudo su
+[root@ip-172-31-41-140 ec2-user]# chef-client
+Starting Chef Infra Client, version 15.6.10
+resolving cookbooks for run list: ["bcf_nginx"]
+Synchronizing Cookbooks:
+  - bcf_nginx (0.1.0)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+Converging 2 resources
+Recipe: bcf_nginx::default
+  * yum_package[nginx] action install
+    * No candidate version available for nginx
+    ================================================================================
+    Error executing action `install` on resource 'yum_package[nginx]'
+    ================================================================================
+
+    Chef::Exceptions::Package
+    -------------------------
+    No candidate version available for nginx
+
+    Resource Declaration:
+    ---------------------
+    # In /var/chef/cache/cookbooks/bcf_nginx/recipes/default.rb
+
+      1: package "nginx"
+      2:
+
+    Compiled Resource:
+    ------------------
+    # Declared in /var/chef/cache/cookbooks/bcf_nginx/recipes/default.rb:1:in `from_file'
+
+    yum_package("nginx") do
+      package_name "nginx"
+      action [:install]
+      default_guard_interpreter :default
+      declared_type :package
+      cookbook_name "bcf_nginx"
+      recipe_name "default"
+    end
+
+    System Info:
+    ------------
+    chef_version=15.6.10
+    platform=amazon
+    platform_version=2
+    ruby=ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-linux]
+    program_name=/bin/chef-client
+    executable=/opt/chef/bin/chef-client
+
+
+Running handlers:
+[2019-12-24T11:01:43+00:00] ERROR: Running exception handlers
+Running handlers complete
+[2019-12-24T11:01:43+00:00] ERROR: Exception handlers complete
+Chef Infra Client failed. 0 resources updated in 03 seconds
+[2019-12-24T11:01:43+00:00] FATAL: Stacktrace dumped to /var/chef/cache/chef-stacktrace.out
+[2019-12-24T11:01:43+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-24T11:01:43+00:00] FATAL: Chef::Exceptions::Package: yum_package[nginx] (bcf_nginx::default line 1) had an error: Chef::Exceptions::Package: No candidate version available for nginx
+[root@ip-172-31-41-140 ec2-user]# sudo chef-client
+Starting Chef Infra Client, version 15.6.10
+resolving cookbooks for run list: ["bcf_nginx"]
+Synchronizing Cookbooks:
+  - bcf_nginx (0.1.0)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+Converging 2 resources
+Recipe: bcf_nginx::default
+  * yum_package[nginx] action install
+    * No candidate version available for nginx
+    ================================================================================
+    Error executing action `install` on resource 'yum_package[nginx]'
+    ================================================================================
+
+    Chef::Exceptions::Package
+    -------------------------
+    No candidate version available for nginx
+
+    Resource Declaration:
+    ---------------------
+    # In /var/chef/cache/cookbooks/bcf_nginx/recipes/default.rb
+
+      1: package "nginx"
+      2:
+
+    Compiled Resource:
+    ------------------
+    # Declared in /var/chef/cache/cookbooks/bcf_nginx/recipes/default.rb:1:in `from_file'
+
+    yum_package("nginx") do
+      package_name "nginx"
+      action [:install]
+      default_guard_interpreter :default
+      declared_type :package
+      cookbook_name "bcf_nginx"
+      recipe_name "default"
+    end
+
+    System Info:
+    ------------
+    chef_version=15.6.10
+    platform=amazon
+    platform_version=2
+    ruby=ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-linux]
+    program_name=/bin/chef-client
+    executable=/opt/chef/bin/chef-client
+
+
+Running handlers:
+[2019-12-24T11:02:36+00:00] ERROR: Running exception handlers
+Running handlers complete
+[2019-12-24T11:02:36+00:00] ERROR: Exception handlers complete
+Chef Infra Client failed. 0 resources updated in 03 seconds
+[2019-12-24T11:02:37+00:00] FATAL: Stacktrace dumped to /var/chef/cache/chef-stacktrace.out
+[2019-12-24T11:02:37+00:00] FATAL: Please provide the contents of the stacktrace.out file if you file a bug report
+[2019-12-24T11:02:37+00:00] FATAL: Chef::Exceptions::Package: yum_package[nginx] (bcf_nginx::default line 1) had an error: Chef::Exceptions::Package: No candidate version available for nginx
+[root@ip-172-31-41-140 ec2-user]# yum install epel
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+No package epel available.
+Error: Nothing to do
+[root@ip-172-31-41-140 ec2-user]# yum update
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+No packages marked for update
+[root@ip-172-31-41-140 ec2-user]# yum -y install epel-release
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+amzn2-core                                                                                                                                           | 2.4 kB  00:00:00
+No package epel-release available.
+Error: Nothing to do
+
+
+epel-release is available in Amazon Linux Extra topic "epel"
+
+To use, run
+# sudo amazon-linux-extras install epel
+
+Learn more at
+https://aws.amazon.com/amazon-linux-2/faqs/#Amazon_Linux_Extras
+
+->sudo amazon-linux-extras install epel //installed epl
+
+[root@ip-172-31-41-140 ec2-user]#  sudo amazon-linux-extras install epel
+Installing epel-release
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+Cleaning repos: amzn2-core amzn2extra-docker amzn2extra-epel
+10 metadata files removed
+4 sqlite files removed
+0 metadata files removed
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+amzn2-core                                                                                                                                           | 2.4 kB  00:00:00
+amzn2extra-docker                                                                                                                                    | 1.3 kB  00:00:00
+amzn2extra-epel                                                                                                                                      | 1.3 kB  00:00:00
+(1/5): amzn2-core/2/x86_64/group_gz                                                                                                                  | 2.5 kB  00:00:00
+(2/5): amzn2-core/2/x86_64/updateinfo                                                                                                                | 181 kB  00:00:00
+(3/5): amzn2extra-epel/2/x86_64/primary_db                                                                                                           | 1.8 kB  00:00:00
+(4/5): amzn2extra-docker/2/x86_64/primary_db                                                                                                         |  59 kB  00:00:00
+(5/5): amzn2-core/2/x86_64/primary_db                                                                                                                |  36 MB  00:00:00
+Resolving Dependencies
+--> Running transaction check
+---> Package epel-release.noarch 0:7-11 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+============================================================================================================================================================================
+ Package                                     Arch                                  Version                             Repository                                      Size
+============================================================================================================================================================================
+Installing:
+ epel-release                                noarch                                7-11                                amzn2extra-epel                                 15 k
+
+Transaction Summary
+============================================================================================================================================================================
+Install  1 Package
+
+Total download size: 15 k
+Installed size: 24 k
+Is this ok [y/d/N]: y
+Downloading packages:
+epel-release-7-11.noarch.rpm                                                                                                                         |  15 kB  00:00:00
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : epel-release-7-11.noarch                                                                                                                                 1/1
+  Verifying  : epel-release-7-11.noarch                                                                                                                                 1/1
+
+Installed:
+  epel-release.noarch 0:7-11
+
+Complete!
+  0  ansible2                 available    [ =2.4.2  =2.4.6  =2.8 ]
+  2  httpd_modules            available    [ =1.0 ]
+  3  memcached1.5             available    \
+        [ =1.5.1  =1.5.16  =1.5.17 ]
+  5  postgresql9.6            available    [ =9.6.6  =9.6.8 ]
+  6  postgresql10             available    [ =10 ]
+  8  redis4.0                 available    [ =4.0.5  =4.0.10 ]
+  9  R3.4                     available    [ =3.4.3 ]
+ 10  rust1                    available    \
+        [ =1.22.1  =1.26.0  =1.26.1  =1.27.2  =1.31.0  =1.38.0 ]
+ 11  vim                      available    [ =8.0 ]
+ 13  ruby2.4                  available    [ =2.4.2  =2.4.4  =2.4.7 ]
+ 15  php7.2                   available    \
+        [ =7.2.0  =7.2.4  =7.2.5  =7.2.8  =7.2.11  =7.2.13  =7.2.14
+          =7.2.16  =7.2.17  =7.2.19  =7.2.21  =7.2.22  =7.2.23
+          =7.2.24 ]
+ 16  php7.1                   available    \
+        [ =7.1.22  =7.1.25  =7.1.27  =7.1.28  =7.1.30  =7.1.31
+          =7.1.32  =7.1.33 ]
+ 17  lamp-mariadb10.2-php7.2  available    \
+        [ =10.2.10_7.2.0  =10.2.10_7.2.4  =10.2.10_7.2.5
+          =10.2.10_7.2.8  =10.2.10_7.2.11  =10.2.10_7.2.13
+          =10.2.10_7.2.14  =10.2.10_7.2.16  =10.2.10_7.2.17
+          =10.2.10_7.2.19  =10.2.10_7.2.21  =10.2.10_7.2.22
+          =10.2.10_7.2.23  =10.2.10_7.2.24 ]
+ 18  libreoffice              available    [ =5.0.6.2_15  =5.3.6.1 ]
+ 19  gimp                     available    [ =2.8.22 ]
+ 20  docker=latest            enabled      \
+        [ =17.12.1  =18.03.1  =18.06.1  =18.09.9 ]
+ 21  mate-desktop1.x          available    [ =1.19.0  =1.20.0 ]
+ 22  GraphicsMagick1.3        available    [ =1.3.29  =1.3.32 ]
+ 23  tomcat8.5                available    \
+        [ =8.5.31  =8.5.32  =8.5.38  =8.5.40  =8.5.42 ]
+ 24  epel=latest              enabled      [ =7.11 ]
+ 25  testing                  available    [ =1.0 ]
+ 26  ecs                      available    [ =stable ]
+ 27  corretto8                available    \
+        [ =1.8.0_192  =1.8.0_202  =1.8.0_212  =1.8.0_222  =1.8.0_232 ]
+ 28  firecracker              available    [ =0.11 ]
+ 29  golang1.11               available    \
+        [ =1.11.3  =1.11.11  =1.11.13 ]
+ 30  squid4                   available    [ =4 ]
+ 31  php7.3                   available    \
+        [ =7.3.2  =7.3.3  =7.3.4  =7.3.6  =7.3.8  =7.3.9  =7.3.10
+          =7.3.11 ]
+ 32  lustre2.10               available    [ =2.10.5 ]
+ 33  java-openjdk11           available    [ =11 ]
+ 34  lynis                    available    [ =stable ]
+ 35  kernel-ng                available    [ =stable ]
+ 36  BCC                      available    [ =0.x ]
+ 37  mono                     available    [ =5.x ]
+ 38  nginx1                   available    [ =stable ]
+ 39  ruby2.6                  available    [ =2.6 ]
+ 40  mock                     available    [ =stable ]
+ 41  postgresql11             available    [ =11 ]
+[root@ip-172-31-41-140 ec2-user]# chef-client
+Starting Chef Infra Client, version 15.6.10
+resolving cookbooks for run list: ["bcf_nginx"]
+Synchronizing Cookbooks:
+  - bcf_nginx (0.1.0)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+Converging 2 resources
+Recipe: bcf_nginx::default
+  * yum_package[nginx] action install
+    - install version 1:1.16.1-1.el7.x86_64 of package nginx
+  * service[nginx] action enable
+    - enable service service[nginx]
+  * service[nginx] action start
+    - start service service[nginx]
+
+Running handlers:
+Running handlers complete
+Chef Infra Client finished, 3/3 resources updated in 16 seconds
+[root@ip-172-31-41-140 ec2-user]# systemctl status nginx
+? nginx.service - The nginx HTTP and reverse proxy server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
+   Active: active (running) since Tue 2019-12-24 11:07:13 UTC; 1min 7s ago
+  Process: 9888 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+  Process: 9886 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+  Process: 9883 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+ Main PID: 9890 (nginx)
+   CGroup: /system.slice/nginx.service
+           +-9890 nginx: master process /usr/sbin/nginx
+           +-9891 nginx: worker process
+
+Dec 24 11:07:13 ip-172-31-41-140.ec2.internal systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Dec 24 11:07:13 ip-172-31-41-140.ec2.internal nginx[9886]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Dec 24 11:07:13 ip-172-31-41-140.ec2.internal nginx[9886]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+Dec 24 11:07:13 ip-172-31-41-140.ec2.internal systemd[1]: Failed to read PID from file /run/nginx.pid: Invalid argument
+Dec 24 11:07:13 ip-172-31-41-140.ec2.internal systemd[1]: Started The nginx HTTP and reverse proxy server.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

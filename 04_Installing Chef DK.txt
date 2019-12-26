@@ -1,14 +1,18 @@
-With a Chef server setup, we're now ready to configure our workstation so that we can communicate with the server by installing the "Chef Developer Kit" (ChefDK). This will be the cloud server that we use for all of our Chef development throughout this course.
+With a Chef server setup, we're now ready to configure our workstation so that we can communicate with the server by installing 
+the "Chef Developer Kit" (ChefDK). This will be the cloud server that we use for all of our Chef development throughout this course.
 
 
 Installing the ChefDK:-
-We'll continue utilizing CentOS 7 servers through this course, including our workstation. Once the server is running, we're ready to download the ChefDK rpm and install it. Since we're preparing for the exam, we'll be using the most recent stable release of the ChefDK (which is 2.5.3 at this time):
+We'll continue utilizing CentOS 7 servers through this course, including our workstation. Once the server is running, we're ready to 
+download the ChefDK rpm and install it. Since we're preparing for the exam, we'll be using the most recent stable release of the ChefDK
+(which is 2.5.3 at this time):
 
 $ cd /tmp
 $ curl -O https://packages.chef.io/files/stable/chefdk/2.5.3/el/7/chefdk-2.5.3-1.el7.x86_64.rpm
 $ sudo rpm -Uvh chefdk-2.5.3-1.el7.x86_64.rpm
 
-Now we have access to quite a few different tools that will be used in developing and testing our Chef code aswell as deploying things. We can see the top level tools and their versions by using the chef --version command.
+Now we have access to quite a few different tools that will be used in developing and testing our Chef code aswell as deploying things.
+We can see the top level tools and their versions by using the chef --version command.
 
 
 $ chef --version
@@ -19,10 +23,13 @@ berks version: 6.3.1
 kitchen version: 1.20.0
 inspec version: 1.51.21
 
-Note: chef-client version 14 has been released, but is not what the test is currently based around, so make sure you're using version 13.x.
+Note: chef-client version 14 has been released, but is not what the test is currently based around, so make sure you're 
+using version 13.x.
 
 
-Most of the tooling around Chef is written in Ruby, and this can be a source of issues when working with Chef locally sometimes because we might already have a version of Ruby installed. Before we continue let's look at what version we might be using and see how to explicitly use the ChefDK version of these packages:
+Most of the tooling around Chef is written in Ruby, and this can be a source of issues when working with Chef locally sometimes 
+because we might already have a version of Ruby installed. Before we continue let's look at what version we might be using and see 
+how to explicitly use the ChefDK version of these packages:
 
 $ which ruby
 /usr/local/rvm/rubies/ruby-2.4.1/bin/ruby
@@ -39,19 +46,23 @@ _chef_comp() {
 }
 complete -F _chef_comp chef
 
-That prints out what this command does, and we can see that it modifies various environment variables so that the gems and ruby version used are the ones that come packaged with ChefDK. We'll eval this output to set these values:
+That prints out what this command does, and we can see that it modifies various environment variables so that the gems and ruby
+ version used are the ones that come packaged with ChefDK. We'll eval this output to set these values:
 
 $ eval "$(chef shell-init bash)"
 $ which ruby
 /opt/chefdk/embedded/bin/ruby
 
-Now we know that we're using the proper version of ruby. Since our workstation is always going to want this set, let's customize our .bash_profile to do this by default.
+Now we know that we're using the proper version of ruby. Since our workstation is always going to want this set, let's customize our 
+.bash_profile to do this by default.
 
 $ echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
 
 
 Generating a chef-repo:-
-When developing with Chef we'll usually be working from within a "chef-repo" that holds onto our cookbooks and dependencies and is shared amongst our team(s). There are a few different ways to get started with a chef-repo and we're going to take a look at both of them. The first way is to generate one using the chef utility. Let's create one now:
+When developing with Chef we'll usually be working from within a "chef-repo" that holds onto our cookbooks and dependencies 
+and is shared amongst our team(s). There are a few different ways to get started with a chef-repo and we're going to take a 
+look at both of them. The first way is to generate one using the chef utility. Let's create one now:
 
 $ cd ~
 $ chef generate repo generated-chef-repo
@@ -71,7 +82,10 @@ drwxrwxr-x.  6 user user   96 Apr 18 17:53 .git
 -rw-rw-r--.  1 user user 1499 Apr 18 17:53 README.md
 drwxrwxr-x.  2 user user   41 Apr 18 17:53 roles
 
-Utilizing the Chef generators makes it a lot easier for us to follow standard Chef development practices as we continue through this course. The main tool that we're going to use to connect to the Chef server is going to be the knife utility. A big difference between this repository and the one that we'll let the Chef server generate for us is that it's not pre-configured to allow us to use knife to connect to our Chef server.
+Utilizing the Chef generators makes it a lot easier for us to follow standard Chef development practices as we continue through
+this course. The main tool that we're going to use to connect to the Chef server is going to be the knife utility. A big difference
+between this repository and the one that we'll let the Chef server generate for us is that it's not pre-configured to allow us to 
+use knife to connect to our Chef server.
 
 Let's manually create a knife configuration to communicate with the server:
 
@@ -89,11 +103,12 @@ Before running commands with Knife
 Configuration file written to
 
 
-Things to note are that we need to use the hostname from our Chef server (in this case it's satyensingh4.mylabserver.com) and also substitute in our organization's "short_name" (linuxacademy in this example).
+Things to note are that we need to use the hostname from our Chef server (in this case it's satyensingh4.mylabserver.com) 
+and also substitute in our organization's "short_name" (linuxacademy in this example).
 
 Next, we need to copy over the pem file that we created when we created our user.
 
-$ scp user@satyensingh4.mylabserver.com:/home/user/keith.pem ~/.chef/
+$ scp user@satyensingh4.mylabserver.com:/home/user/keith.pem ~/.chef/ .........
 
 Now we can connect to the Chef server using knife
 
@@ -169,3 +184,368 @@ The big difference between this repo and our generated repository is that it inc
 
 
 Now we're ready to move forward to use our workstation.
+-----------------------------------
+$ cd /tmp
+$ curl -O https://packages.chef.io/files/stable/chefdk/2.5.3/el/7/chefdk-2.5.3-1.el7.x86_64.rpm
+$ sudo rpm -Uvh chefdk-2.5.3-1.el7.x86_64.rpm
+$ chef --version
+$ which ruby
+
+**************************************************************************************************************************************************
+Your Interactive Bash Terminal.
+Wait a few seconds while ChefDK installs. Run `chef version` to check that it is already installed.
+
+$ cd /tmp
+$ pwd
+/tmp
+$ curl -O https://packages.chef.io/files/stable/chefdk/2.5.3/el/7/chefdk-2.5.3-1.el7.x86_64.rpm
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  102M  100  102M    0     0  12.1M      0  0:00:08  0:00:08 --:--:-- 24.1M
+$ sudo rpm -Uvh chefdk-2.5.3-1.el7.x86_64.rpm
+bash: sudo: command not found
+$ apt-get install  rpm -Uvh chefdk-2.5.3-1.el7.x86_64.rpm
+bash: apt-get: command not found
+$  rpm -Uvh chefdk-2.5.3-1.el7.x86_64.rpm
+warning: chefdk-2.5.3-1.el7.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:chefdk-2.5.3-1.el7               ################################# [ 50%]
+Thank you for installing Chef Development Kit!
+Cleaning up / removing...
+   2:chefdk-1.2.22-1.el7              ################################# [100%]
+$ chef --version
+Chef Development Kit Version: 2.5.3
+chef-client version: 13.8.5
+delivery version: master (73ebb72a6c42b3d2ff5370c476be800fee7e5427)
+berks version: 6.3.1
+kitchen version: 1.20.0
+inspec version: 1.51.21
+$ which ruby
+/usr/bin/which: no ruby in (/home/scrapbook/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin)
+$
+$ chef shell-init bash
+export PATH="/opt/chefdk/bin:/home/scrapbook/.chefdk/gem/ruby/2.4.0/bin:/opt/chefdk/embedded/bin:/home/scrapbook/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/chefdk/gitbin"
+export GEM_ROOT="/opt/chefdk/embedded/lib/ruby/gems/2.4.0"
+export GEM_HOME="/home/scrapbook/.chefdk/gem/ruby/2.4.0"
+export GEM_PATH="/home/scrapbook/.chefdk/gem/ruby/2.4.0:/opt/chefdk/embedded/lib/ruby/gems/2.4.0"
+_chef_comp() {
+    local COMMANDS="exec env gem generate shell-init install update push push-archive show-policy diff provision export clean-policy-revisions clean-policy-cookbooks delete-policy-group delete-policyundelete verify"
+    COMPREPLY=($(compgen -W "$COMMANDS" -- ${COMP_WORDS[COMP_CWORD]} ))
+}
+complete -F _chef_comp chef
+
+$ eval "$(chef shell-init bash)"
+$ which ruby
+/opt/chefdk/embedded/bin/ruby
+$ echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
+$ echo 'eval "$(chef shell-init bash)"'eval "$(chef shell-init bash)"
+$ echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
+$ cd ~
+$ chef generate repo generated-chef-repo
+Recipe: code_generator::repo
+  * directory[/home/scrapbook/generated-chef-repo] action create
+    - create new directory /home/scrapbook/generated-chef-repo
+  * template[/home/scrapbook/generated-chef-repo/LICENSE] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/LICENSE
+    - update content in file /home/scrapbook/generated-chef-repo/LICENSE from none to 3c525c
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/.chef-repo.txt] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/.chef-repo.txt
+    - update content in file /home/scrapbook/generated-chef-repo/.chef-repo.txt from none to 2bed28
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/README.md] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/README.md
+    - update content in file /home/scrapbook/generated-chef-repo/README.md from none to 2b4f46
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/chefignore] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/chefignore
+    - update content in file /home/scrapbook/generated-chef-repo/chefignore from none to f728e0
+    (diff output suppressed by config)
+  * remote_directory[/home/scrapbook/generated-chef-repo/cookbooks] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/cookbooks
+  Recipe: <Dynamically Defined Resource>
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/README.md fromnone to d11a1f
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb from none to af5c52
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example/attributes] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example/attributes
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb from none to ed1113
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example/recipes] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example/recipes
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb from none to f06124
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/data_bags] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/data_bags
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/data_bags/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/data_bags/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/data_bags/README.md from none to9bb9c0
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/data_bags/example] action create
+      - create new directory /home/scrapbook/generated-chef-repo/data_bags/example
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/data_bags/example/example_item.json] actioncreate_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/data_bags/example/example_item.json
+      - update content in file /home/scrapbook/generated-chef-repo/data_bags/example/example_item.json from none to 1048ec
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/roles] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/roles
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/roles/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/roles/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/roles/README.md from none to c36187
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/roles/example.json] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/roles/example.json
+      - update content in file /home/scrapbook/generated-chef-repo/roles/example.json from none to 297ea8
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/environments] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/environments
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/environments/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/environments/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/environments/README.md from noneto c9ccdf
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/environments/example.json] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/environments/example.json
+      - update content in file /home/scrapbook/generated-chef-repo/environments/example.json from none to 59a963
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/README.md] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/cookbooks/README.md
+    - update content in file /home/scrapbook/generated-chef-repo/cookbooks/README.md from none to 3e0939
+    (diff output suppressed by config)
+  * execute[initialize-git] action run
+    - execute git init .
+  * template[/home/scrapbook/generated-chef-repo/.gitignore] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/.gitignore
+    - update content in file /home/scrapbook/generated-chef-repo/.gitignore from none to 11e5ee
+    (diff output suppressed by config)
+$
+$ chef shell-init bash
+export PATH="/opt/chefdk/bin:/home/scrapbook/.chefdk/gem/ruby/2.4.0/bin:/opt/chefdk/embedded/bin:/home/scrapbook/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/chefdk/gitbin"
+export GEM_ROOT="/opt/chefdk/embedded/lib/ruby/gems/2.4.0"
+export GEM_HOME="/home/scrapbook/.chefdk/gem/ruby/2.4.0"
+export GEM_PATH="/home/scrapbook/.chefdk/gem/ruby/2.4.0:/opt/chefdk/embedded/lib/ruby/gems/2.4.0"
+_chef_comp() {
+    local COMMANDS="exec env gem generate shell-init install update push push-archive show-policy diff provision export clean-policy-revisions clean-policy-cookbooks delete-policy-group delete-policyundelete verify"
+    COMPREPLY=($(compgen -W "$COMMANDS" -- ${COMP_WORDS[COMP_CWORD]} ))
+}
+complete -F _chef_comp chef
+
+$ eval "$(chef shell-init bash)"
+$ which ruby
+/opt/chefdk/embedded/bin/ruby$ echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
+$ echo 'eval "$(chef shell-init bash)"'eval "$(chef shell-init bash)"
+$ echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
+$ cd ~
+$ chef generate repo generated-chef-repo
+Recipe: code_generator::repo
+  * directory[/home/scrapbook/generated-chef-repo] action create
+    - create new directory /home/scrapbook/generated-chef-repo
+  * template[/home/scrapbook/generated-chef-repo/LICENSE] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/LICENSE
+    - update content in file /home/scrapbook/generated-chef-repo/LICENSE from none to 3c525c
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/.chef-repo.txt] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/.chef-repo.txt
+    - update content in file /home/scrapbook/generated-chef-repo/.chef-repo.txt from none to 2bed28
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/README.md] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/README.md
+    - update content in file /home/scrapbook/generated-chef-repo/README.md from none to 2b4f46
+    (diff output suppressed by config)
+  * cookbook_file[/home/scrapbook/generated-chef-repo/chefignore] action create_if_missing
+    - create new file /home/scrapbook/generated-chef-repo/chefignore
+    - update content in file /home/scrapbook/generated-chef-repo/chefignore from none to f728e0
+    (diff output suppressed by config)
+  * remote_directory[/home/scrapbook/generated-chef-repo/cookbooks] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/cookbooks
+  Recipe: <Dynamically Defined Resource>
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/README.md fromnone to d11a1f
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/metadata.rb from none to af5c52
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example/attributes] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example/attributes
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/attributes/default.rb from none to ed1113
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/cookbooks/example/recipes] action create
+      - create new directory /home/scrapbook/generated-chef-repo/cookbooks/example/recipes
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb
+      - update content in file /home/scrapbook/generated-chef-repo/cookbooks/example/recipes/default.rb from none to f06124
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/data_bags] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/data_bags
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/data_bags/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/data_bags/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/data_bags/README.md from none to9bb9c0
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * directory[/home/scrapbook/generated-chef-repo/data_bags/example] action create
+      - create new directory /home/scrapbook/generated-chef-repo/data_bags/example
+      - change mode from '' to '0755'
+      - change owner from '' to 'root'
+      - change group from '' to 'root'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/data_bags/example/example_item.json] actioncreate_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/data_bags/example/example_item.json
+      - update content in file /home/scrapbook/generated-chef-repo/data_bags/example/example_item.json from none to 1048ec
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/roles] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/roles
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/roles/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/roles/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/roles/README.md from none to c36187
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+    * cookbook_file[/home/scrapbook/generated-chef-repo/roles/example.json] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/roles/example.json
+      - update content in file /home/scrapbook/generated-chef-repo/roles/example.json from none to 297ea8
+      (diff output suppressed by config)
+      - change mode from '' to '0644'
+
+Recipe: code_generator::repo
+  * remote_directory[/home/scrapbook/generated-chef-repo/environments] action create_if_missing
+    - create new directory /home/scrapbook/generated-chef-repo/environments
+  Recipe: <Dynamically Defined Resource>
+    * cookbook_file[/home/scrapbook/generated-chef-repo/environments/README.md] action create_if_missing
+      - create new file /home/scrapbook/generated-chef-repo/environments/README.md
+      - update content in file /home/scrapbook/generated-chef-repo/environments/README.md from noneto c9ccdf
+      (diff output suppressed by config)
+$
+$ cd generated-chef-repo$ ls -al
+total 52
+drwxr-xr-x 7 root      root      4096 Dec 24 06:49 .drwx------ 1 scrapbook scrapbook 4096 Dec 24 06:49 ..
+-rw-r--r-- 1 root      root       255 Dec 24 06:49 .chef-repo.txt
+drwxr-xr-x 7 root      root      4096 Dec 24 06:49 .git
+-rw-r--r-- 1 root      root      2121 Dec 24 06:49 .gitignore
+-rw-r--r-- 1 root      root        70 Dec 24 06:49 LICENSE
+-rw-r--r-- 1 root      root      1499 Dec 24 06:49 README.md
+-rw-r--r-- 1 root      root      1133 Dec 24 06:49 chefignore
+drwxr-xr-x 3 root      root      4096 Dec 24 06:49 cookbooksdrwxr-xr-x 3 root      root      4096 Dec 24 06:49 data_bags
+drwxr-xr-x 2 root      root      4096 Dec 24 06:49 environments
+drwxr-xr-x 2 root      root      4096 Dec 24 06:49 roles
+$ knife configure
+WARNING: No knife configuration file found. See https://docs.chef.io/config_rb_knife.html for detail
+s.
+Please enter the chef server URL: [https://e196fe8e38ea/organizations/myorg]
+Please enter an existing username or clientname for the API: ^C$ ^C
+$ knife configure
+WARNING: No knife configuration file found. See https://docs.chef.io/config_rb_knife.html for details.
+Please enter the chef server URL: [https://e196fe8e38ea/organizations/myorg] https://satyensingh4.mylabserver.com/organizations/linuxacademy
+Please enter an existing username or clientname for the API: keith
+*****
+
+You must place your client key in:
+  /home/scrapbook/.chef/keith.pem
+Before running commands with Knife
+
+*****
+Configuration file written to
+$ ls
+LICENSE  README.md  chefignore  cookbooks  data_bags  environments  roles
+$ knife node list
+WARN: Failed to read the private key /home/scrapbook/.chef/keith.pem: #<Errno::ENOENT: No such fileor directory @ rb_sysopen - /home/scrapbook/.chef/keith.pem>
+ERROR: Your private key could not be loaded from /home/scrapbook/.chef/keith.pem
+Check your configuration file and ensure that your private key is readable
+$ knife ssl fetch
+WARNING: Certificates from satyensingh4.mylabserver.com will be fetched and placed in your trusted_cert
+directory (/home/scrapbook/.chef/trusted_certs).
+
+Knife has no means to verify these are the correct certificates. You should
+verify the authenticity of these certificates after downloading.
+
+ERROR: Network Error: getaddrinfo: Name or service not known
+Check your knife configuration and network settings
+$ knife node list
+WARN: Failed to read the private key /home/scrapbook/.chef/keith.pem: #<Errno::ENOENT: No such fileor directory @ rb_sysopen - /home/scrapbook/.chef/keith.pem>
+ERROR: Your private key could not be loaded from /home/scrapbook/.chef/keith.pem
+Check your configuration file and ensure that your private key is readable
+$ install -y unzip
+install: invalid option -- 'y'
+Try 'install --help' for more information.
+$ a[t-get install unzip
+>
+> ^C
+$ apt-get install unzip
+bash: apt-get: command not found
+$ install unzip
+install: missing destination file operand after 'unzip'
+Try 'install --help' for more information.
+$ sudo yum install -y unzip
+bash: sudo: command not found
+$ unzip chef-starter.zip
+bash: unzip: command not found
+$ scp chef-starter.zip user@satyensingh5.mylabserver.com:/home/user/
+ssh: Could not resolve hostname satyensingh5.mylabserver.com: Name or service not known
+lost connection

@@ -1,19 +1,25 @@
-Run-lists are incredibly important because nothing would really happen if we didn’t have them, but it’s pretty common for us to want to reuse a run-list. Here, we’ll learn to do just that by defining a role.
+Run-lists are incredibly important because nothing would really happen if we didn’t have them, but it’s pretty common for us to want to 
+reuse a run-list. Here, we’ll learn to do just that by defining a role.
 
 Documentation:-
 Chef role documentation:- https://docs.chef.io/roles.html
 
 What is a Role?
-Officially, a role is “a way to define certain patterns and processes that exist across nodes in an organization as belonging to a single job function”. A simple way to think of this is that a role is a repeatable, named run-list that can also define shared attributes. Say we want to create a group of users on every server and install some universal tools (for instance vim).
+Officially, a role is “a way to define certain patterns and processes that exist across nodes in an organization as belonging to a single
+job function”. A simple way to think of this is that a role is a repeatable, named run-list that can also define shared attributes. 
+Say we want to create a group of users on every server and install some universal tools (for instance vim).
 
-Let’s create a few more cookbooks that can be responsible for these things and then create a role called “base” that we can add to each node.
+Let’s create a few more cookbooks that can be responsible for these things and then create a role called “base” that we can add to each 
+node.
 
 Creating Additional Cookbooks
 We’ll create two more cookbooks:
 
 bcf_essentials - Install essential tools like vim.
 bcf_users - Create users.
-We’ve named both of these cookbooks with bcf_ because all cookbooks need to be uniquely named and it’s a common practice to prefix custom cookbooks with your company or project name. For this course we’re using bcf_ for “basic chef fluency”, and this prefix will prevent our cookbooks from colliding with any potential third-party cookbooks that we might use.
+We’ve named both of these cookbooks with bcf_ because all cookbooks need to be uniquely named and it’s a common practice to prefix custom 
+cookbooks with your company or project name. For this course we’re using bcf_ for “basic chef fluency”, and this prefix will prevent our 
+cookbooks from colliding with any potential third-party cookbooks that we might use.
 
 Let’s create our cookbooks now:
 
@@ -24,7 +30,10 @@ Let’s create our cookbooks now:
 While our focus is on building up a role for ourselves, we’re going to learn more about writing cookbooks in the process.
 
 Building the bcf_essentials Cookbook
-The bcf_essentials cookbook is a fairly generic cookbook that will be in charge of installing and configuring some of our universal software. As you can imagine, there might be quite a few different tools that we want to install and configure, and this is a great opportunity for us to be able to separate these out into self-contained recipes. Let’s create a recipe specifically to install and configure vim by create a new recipe file at ~/chef-repo/cookbooks/bcf_essentials/recipes/vim.rb:
+The bcf_essentials cookbook is a fairly generic cookbook that will be in charge of installing and configuring some of our universal 
+software. As you can imagine, there might be quite a few different tools that we want to install and configure, and this is a great 
+opportunity for us to be able to separate these out into self-contained recipes. Let’s create a recipe specifically to install and 
+configure vim by create a new recipe file at ~/chef-repo/cookbooks/bcf_essentials/recipes/vim.rb:
 
 [workstation] chef-repo $ chef generate recipe cookbooks/bcf_essentials vim
 Recipe: code_generator::recipe
@@ -273,3 +282,180 @@ satyensingh3.mylabserver.com
 satyensingh3.mylabserver.com Running handlers:
 satyensingh3.mylabserver.com Running handlers complete
 satyensingh3.mylabserver.com Chef Client finished, 2/7 resources updated in 09 seconds
+
+
+*****************************************************************************************************
+PowerShell 5.1.17763.771 (Microsoft Windows NT 10.0.17763.0)
+Ohai, welcome to ChefDK!
+
+PS C:\Users\divnaray\Desktop> cd ..
+PS C:\Users\divnaray> cd ..
+PS C:\Users> cd ..
+PS C:\> cd \Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> ls
+
+
+    Directory: C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       24-12-2019     14:51                bcf_nginx
+d-----       24-12-2019     09:08                starter
+-a----       24-12-2019     09:08            588 chefignore
+
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef generate cookbook bcf_essentials
+Generating cookbook bcf_essentials
+- Ensuring correct cookbook content
+- Committing cookbook files to git
+
+Your cookbook is ready. Type `cd bcf_essentials` to enter it.
+
+There are several commands you can run to get started locally developing and testing your cookbook.
+Type `delivery local --help` to see a full list of local testing commands.
+
+Why not start by writing an InSpec test? Tests for the default recipe are stored at:
+
+test/integration/default/default_test.rb
+
+If you'd prefer to dive right in, the default recipe can be found at:
+
+recipes/default.rb
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef generate cookbook bcf_users
+Generating cookbook bcf_users
+- Ensuring correct cookbook content
+- Committing cookbook files to git
+
+Your cookbook is ready. Type `cd bcf_users` to enter it.
+
+There are several commands you can run to get started locally developing and testing your cookbook.
+Type `delivery local --help` to see a full list of local testing commands.
+
+Why not start by writing an InSpec test? Tests for the default recipe are stored at:
+
+test/integration/default/default_test.rb
+
+If you'd prefer to dive right in, the default recipe can be found at:
+
+recipes/default.rb
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef generate recipe bcf_essentials vim
+Recipe: code_generator::recipe
+  * directory[./bcf_essentials/spec/unit/recipes] action create (up to date)
+  * cookbook_file[./bcf_essentials/spec/spec_helper.rb] action create_if_missing (up to date)
+  * template[./bcf_essentials/spec/unit/recipes/vim_spec.rb] action create_if_missing
+    - create new file ./bcf_essentials/spec/unit/recipes/vim_spec.rb
+    - update content in file ./bcf_essentials/spec/unit/recipes/vim_spec.rb from none to d6aa63
+    (diff output suppressed by config)
+  * directory[./bcf_essentials/test/integration/default] action create (up to date)
+  * template[./bcf_essentials/test/integration/default/vim_test.rb] action create_if_missing
+    - create new file ./bcf_essentials/test/integration/default/vim_test.rb
+    - update content in file ./bcf_essentials/test/integration/default/vim_test.rb from none to 97928b
+    (diff output suppressed by config)
+  * template[./bcf_essentials/recipes/vim.rb] action create
+    - create new file ./bcf_essentials/recipes/vim.rb
+    - update content in file ./bcf_essentials/recipes/vim.rb from none to 11aa79
+    (diff output suppressed by config)
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef generate file cookbooks/bcf_essentials vimrc
+Recipe: code_generator::cookbook_file
+  * directory[cookbooks/bcf_essentials/files] action create
+    - create new directory cookbooks/bcf_essentials/files
+  * template[cookbooks/bcf_essentials/files/vimrc] action create
+    - create new file cookbooks/bcf_essentials/files/vimrc
+    - update content in file cookbooks/bcf_essentials/files/vimrc from none to e3b0c4
+    (diff output suppressed by config)
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> sudo chef-client --local-mode -o 'recipe[bcf_essentials::vim]'
+sudo : The term 'sudo' is not recognized as the name of a cmdlet, function, script file, or operable program. Check
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ sudo chef-client --local-mode -o 'recipe[bcf_essentials::vim]'
++ ~~~~
+    + CategoryInfo          : ObjectNotFound: (sudo:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> chef-client --local-mode -o 'recipe[bcf_essentials::vim]'
+
+[2019-12-26T10:42:58+05:30] INFO: Started Chef Infra Zero at chefzero://localhost:1 with repository at C:/Divya/Trainings/7_Chef/chef-starter/chef-repo
+  One version per cookbook
+
+Starting Chef Infra Client, version 15.5.17
+[2019-12-26T10:42:58+05:30] INFO: *** Chef Infra Client 15.5.17 ***
+[2019-12-26T10:42:58+05:30] INFO: Platform: x64-mingw32
+[2019-12-26T10:42:58+05:30] INFO: Chef-client pid: 4548
+[2019-12-26T10:43:28+05:30] WARN: Run List override has been provided.
+[2019-12-26T10:43:28+05:30] WARN: Original Run List: []
+[2019-12-26T10:43:28+05:30] WARN: Overridden Run List: [recipe[bcf_essentials::vim]]
+[2019-12-26T10:43:28+05:30] INFO: Run List is [recipe[bcf_essentials::vim]]
+[2019-12-26T10:43:28+05:30] INFO: Run List expands to [bcf_essentials::vim]
+[2019-12-26T10:43:28+05:30] INFO: Starting Chef Infra Client Run for djspys
+[2019-12-26T10:43:28+05:30] INFO: Running start handlers
+[2019-12-26T10:43:28+05:30] INFO: Start handlers complete.
+resolving cookbooks for run list: ["bcf_essentials::vim"]
+[2019-12-26T10:43:29+05:30] INFO: Loading cookbooks [bcf_essentials@0.1.0]
+[2019-12-26T10:43:29+05:30] INFO: Skipping removal of obsoleted cookbooks from the cache
+Synchronizing Cookbooks:
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/chefignore in the cache.
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/README.md in the cache.
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/recipes/default.rb in the cache.
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/metadata.rb in the cache.
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/LICENSE in the cache.
+[2019-12-26T10:43:29+05:30] INFO: Storing updated cookbooks/bcf_essentials/recipes/vim.rb in the cache.
+  - bcf_essentials (0.1.0)
+Installing Cookbook Gems:
+Compiling Cookbooks...
+Converging 0 resources
+[2019-12-26T10:43:30+05:30] WARN: Skipping final node save because override_runlist was given
+[2019-12-26T10:43:30+05:30] INFO: Chef Infra Client Run complete in 1.3487704 seconds
+[2019-12-26T10:43:30+05:30] INFO: Skipping removal of unused files from the cache
+
+Running handlers:
+[2019-12-26T10:43:30+05:30] INFO: Running report handlers
+Running handlers complete
+[2019-12-26T10:43:30+05:30] INFO: Report handlers complete
+Chef Infra Client finished, 0/0 resources updated in 31 seconds
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> knife role create base
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+ERROR: RuntimeError: Please set EDITOR environment variable. See https://docs.chef.io/knife_setup.html for details.
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo>echo 'export EDITOR=vim' >> ~/.bash_profile
+
+
+knife[:editor] = "C:\\progra~2\\notepa~1\\notepad++.exe -nosession -multiInst" 
+add this data in knife.rb file
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> knife role create base
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+Created role[base]
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> knife role list
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+base
+
+ PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> knife role show base
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+chef_type:           role
+default_attributes:
+description:
+env_run_lists:
+json_class:          Chef::Role
+name:                base
+override_attributes:
+run_list:
+  recipe[bcf_essentials]
+  recipe[bcf_users]
+
+ PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo> knife node run_list add Node1 'role[base]' --before 'recipe[bcf_nginx]'
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+Node1:
+  run_list:
+    recipe[sample1]
+    recipe[sample2]
+    recipe[roles]
+    recipe[bcf_nginx]
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\cookbooks> knife cookbook upload bcf_essentials bcf_users -o PS C:\Divya\Trainings\7_Chef\Chef\chef-repo\cookbooks
+C:/opscode/chefdk/embedded/lib/ruby/2.6.0/rubygems/core_ext/kernel_require.rb:54:in `require': Win32API is deprecated after Ruby 1.9.1; use fiddle directly instead (StructuredWarnings::StandardWarning)
+Uploading bcf_essentials [0.1.0]
+Uploading bcf_users      [0.1.0]
+Uploaded 2 cookbooks.

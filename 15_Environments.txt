@@ -1,4 +1,6 @@
-It’s pretty common to have nodes that are seemingly identical in what they install, but used for slightly different purposes. A great example of this is a staging application server vs. a production application server. In this lesson, we’ll learn how we can use Chef environments to distinguish similar nodes and add more context to our infrastructure.
+It’s pretty common to have nodes that are seemingly identical in what they install, but used for slightly different purposes.
+A great example of this is a staging application server vs. a production application server. In this lesson, we’ll learn how we can use
+Chef environments to distinguish similar nodes and add more context to our infrastructure.
 
 Documentation:-
 Chef environments documentation:- https://docs.chef.io/environments.html
@@ -54,3 +56,48 @@ Now if we use knife node show we should see that the node is part of the staging
 [workstation] chef-repo $ knife node show web-node1 -a environment
 web-node1:
   environment: staging
+  
+  
+ **********************************************************
+ 
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife environment create staging --description 'Pre-production, staging environment for internal access only.'
+
+{
+  "name": "staging",
+  "description": "Pre-production, staging environment for internal access only.",
+  "cookbook_versions": {
+
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+
+  }
+}
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife environment create production --description 'Production environment'
+{
+  "name": "production",
+  "description": "Production environment",
+  "cookbook_versions": {
+
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+
+  }
+}
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef> knife environment list
+_default
+staging
+production
+
+PS C:\Divya\Trainings\7_Chef\chef-starter\chef-repo\.chef>knife node environment_set Node1 staging
+Node1:
+  chef_environment: staging
